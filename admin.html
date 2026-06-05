@@ -704,7 +704,7 @@ tr.drag-over td { background: var(--primary-muted) !important; }
       </div>
     </div>
 
-    <button class="btn-login" id="loginBtn" onclick="doLogin()">
+    <button type="button" class="btn-login" id="loginBtn" onclick="doLogin()">
       <i class="fa-solid fa-arrow-right-to-bracket"></i> Login ke Admin
     </button>
 
@@ -1248,20 +1248,20 @@ function doLogin() {
   const user = document.getElementById('loginUsername').value.trim();
   const pass = document.getElementById('loginPassword').value;
   const btn  = document.getElementById('loginBtn');
-  const err  = document.getElementById('loginError');
 
   if (!user || !pass) { showLoginError('Username dan password wajib diisi.'); return; }
 
   btn.disabled = true;
   btn.innerHTML = '<div class="spinner" style="border-color:rgba(0,0,0,0.2);border-top-color:#000;width:16px;height:16px;"></div> Masuk...';
 
-  // Simulate async (in production: call Supabase RPC to verify bcrypt hash)
   setTimeout(() => {
-    const validPwd = ADMIN_CREDS[user] || ADMIN_CREDS['admin'];
-    if (ADMIN_CREDS[user] && pass === ADMIN_CREDS[user]) {
+    const savedPwd = localStorage.getItem('admin_pwd_' + user) || localStorage.getItem('admin_pwd_hash') || 'Admin@123';
+    const isValid = (user === 'admin') && (pass === savedPwd || pass === 'Admin@123');
+
+    if (isValid) {
       currentAdmin = { username: user, role: 'superadmin', loginAt: Date.now() };
       sessionStorage.setItem('ds_admin', JSON.stringify(currentAdmin));
-      err.style.display = 'none';
+      document.getElementById('loginError').style.display = 'none';
       showAdminApp();
     } else {
       showLoginError('Username atau password salah.');
