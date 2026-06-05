@@ -957,10 +957,10 @@ tr.drag-over td { background: var(--primary-muted) !important; }
           </div>
           <div class="settings-row">
             <div class="settings-row-info">
-              <p>Service Role Key <span style="color:var(--red);">⚠ Rahasia</span></p>
-              <span>Untuk akses penuh admin — jangan share ke siapapun</span>
+              <p>Service Role Key <span style="color:var(--red);">WARNING: SECRET</span></p>
+              <span>Removed from browser for security</span>
             </div>
-            <input type="password" class="form-input" id="cfgService" placeholder="eyJhbGciOiJIUzI1NiIs..." style="width:340px;">
+            <input type="password" class="form-input" id="cfgService" placeholder="(tidak digunakan)" disabled style="width:340px;opacity:0.6;">
           </div>
           <div class="settings-row">
             <div></div>
@@ -1220,15 +1220,14 @@ tr.drag-over td { background: var(--primary-muted) !important; }
 // ══════════════════════════════════════
 // CONFIG — Supabase
 // ══════════════════════════════════════
-let SUPABASE_URL     = localStorage.getItem('sb_url')     || '';
-let SUPABASE_ANON    = localStorage.getItem('sb_anon')    || '';
-let SUPABASE_SERVICE = localStorage.getItem('sb_service') || '';
+let SUPABASE_URL  = localStorage.getItem('sb_url')  || 'https://buwhyrgwhqzomdoofncg.supabase.co';
+let SUPABASE_ANON = localStorage.getItem('sb_anon') || 'sb_publishable_fcVGEjRd52ya4CsZ_nM_8g_C81hmv22';
 let supabase = null;
 
 function initSupabase() {
-  if (!SUPABASE_URL || !SUPABASE_SERVICE) return false;
+  if (!SUPABASE_URL || !SUPABASE_ANON) return false;
   try {
-    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_SERVICE);
+    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
     return true;
   } catch(e) { return false; }
 }
@@ -1304,9 +1303,8 @@ function showAdminApp() {
   document.getElementById('sidebarAvatar').textContent = currentAdmin.username[0].toUpperCase();
 
   // Load settings into form
-  document.getElementById('cfgUrl').value     = SUPABASE_URL;
-  document.getElementById('cfgAnon').value    = SUPABASE_ANON;
-  document.getElementById('cfgService').value = SUPABASE_SERVICE;
+  document.getElementById('cfgUrl').value  = SUPABASE_URL;
+  document.getElementById('cfgAnon').value = SUPABASE_ANON;
 
   initSupabase();
   loadDashboard();
@@ -1816,12 +1814,11 @@ async function deleteProject(id, name) {
 // SETTINGS
 // ══════════════════════════════════════
 function saveConfig() {
-  SUPABASE_URL     = document.getElementById('cfgUrl').value.trim();
-  SUPABASE_ANON    = document.getElementById('cfgAnon').value.trim();
-  SUPABASE_SERVICE = document.getElementById('cfgService').value.trim();
-  localStorage.setItem('sb_url',     SUPABASE_URL);
-  localStorage.setItem('sb_anon',    SUPABASE_ANON);
-  localStorage.setItem('sb_service', SUPABASE_SERVICE);
+  SUPABASE_URL  = document.getElementById('cfgUrl').value.trim();
+  SUPABASE_ANON = document.getElementById('cfgAnon').value.trim();
+  localStorage.setItem('sb_url',  SUPABASE_URL);
+  localStorage.setItem('sb_anon', SUPABASE_ANON);
+  // sb_service deliberately removed for security (service role key must never be in browser)
   const ok = initSupabase();
   toast(ok ? 'Konfigurasi Supabase disimpan & terhubung!' : 'Konfigurasi disimpan (URL/key kosong, menggunakan data lokal)', ok ? 'success' : 'info');
 }
