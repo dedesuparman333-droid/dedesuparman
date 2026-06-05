@@ -1461,6 +1461,659 @@ footer {
   .nav, .back-top, .install-banner { display: none; }
   #home { min-height: auto; }
 }
+
+/* ═══ ADMIN PANEL STYLES ═══ */
+
+/* ════════════════════════════════════════
+   DESIGN TOKENS
+════════════════════════════════════════ */
+:root {
+  --primary: #BFFF00;
+  --primary-rgb: 191,255,0;
+  --primary-dark: #99cc00;
+  --primary-muted: rgba(191,255,0,0.10);
+  --primary-glow: rgba(191,255,0,0.28);
+
+  --bg:      #090c0a;
+  --bg-2:    #111510;
+  --bg-3:    #161b14;
+  --surface: #1a201a;
+  --surface-2: #212821;
+  --border:  rgba(255,255,255,0.07);
+  --border-strong: rgba(255,255,255,0.13);
+
+  --text-1: #eef2ea;
+  --text-2: #8fa08a;
+  --text-3: #5a6655;
+  --text-inv: #090c0a;
+
+  --red:    #ff4d6d;
+  --green:  #00d68f;
+  --blue:   #4f9eff;
+  --orange: #ff8c42;
+  --yellow: #ffcc00;
+
+  --r-sm: 8px;
+  --r-md: 14px;
+  --r-lg: 20px;
+  --r-xl: 28px;
+  --r-full: 9999px;
+  --ease: cubic-bezier(0.23,1,0.32,1);
+
+  --sidebar-w: 240px;
+  --topbar-h: 60px;
+}
+
+*,*::before,*::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; }
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text-1);
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+a { color: inherit; text-decoration: none; }
+button { cursor: pointer; border: none; background: none; font-family: inherit; color: inherit; }
+input, select, textarea { font-family: inherit; }
+ul { list-style: none; }
+img { max-width: 100%; display: block; }
+
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: var(--bg-2); }
+::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 3px; }
+
+/* ════════════════════════════════════════
+   TOAST NOTIFICATIONS
+════════════════════════════════════════ */
+#toast-container {
+  position: fixed; top: 20px; right: 20px; z-index: 9999;
+  display: flex; flex-direction: column; gap: 10px; pointer-events: none;
+}
+.toast {
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-md);
+  padding: 14px 18px;
+  display: flex; align-items: center; gap: 12px;
+  font-size: 0.875rem; font-weight: 500;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  pointer-events: auto;
+  animation: slideInRight 0.3s var(--ease);
+  min-width: 280px; max-width: 360px;
+}
+.toast.success { border-left: 3px solid var(--green); }
+.toast.error   { border-left: 3px solid var(--red); }
+.toast.info    { border-left: 3px solid var(--blue); }
+.toast i { font-size: 1rem; }
+.toast.success i { color: var(--green); }
+.toast.error   i { color: var(--red); }
+.toast.info    i { color: var(--blue); }
+@keyframes slideInRight {
+  from { opacity:0; transform: translateX(20px); }
+  to   { opacity:1; transform: translateX(0); }
+}
+
+/* ════════════════════════════════════════
+   LOGIN SCREEN
+════════════════════════════════════════ */
+#login-screen {
+  min-height: 100vh;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--bg);
+  position: relative; overflow: hidden;
+}
+.login-bg-glow {
+  position: absolute;
+  width: 500px; height: 500px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--primary-glow) 0%, transparent 70%);
+  top: -150px; right: -100px;
+  pointer-events: none;
+}
+.login-bg-glow-2 {
+  position: absolute;
+  width: 300px; height: 300px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(79,158,255,0.12) 0%, transparent 70%);
+  bottom: -80px; left: -60px;
+  pointer-events: none;
+}
+.login-card {
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-xl);
+  padding: 48px 40px;
+  width: 100%; max-width: 420px;
+  box-shadow: 0 24px 64px rgba(0,0,0,0.6);
+  position: relative;
+}
+.login-logo {
+  display: flex; align-items: center; gap: 12px;
+  margin-bottom: 32px;
+}
+.login-logo-mark {
+  width: 42px; height: 42px;
+  background: var(--primary);
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Syne', sans-serif;
+  font-weight: 800; font-size: 1rem;
+  color: var(--text-inv);
+}
+.login-logo-text { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 1.1rem; }
+.login-logo-text span { display: block; font-size: 0.72rem; font-weight: 400; color: var(--text-2); }
+.login-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 1.6rem; font-weight: 800;
+  margin-bottom: 6px;
+}
+.login-subtitle { font-size: 0.875rem; color: var(--text-2); margin-bottom: 32px; }
+
+.form-group { margin-bottom: 18px; }
+.form-label {
+  display: block; font-size: 0.82rem; font-weight: 600;
+  color: var(--text-2); margin-bottom: 8px; letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.form-input {
+  width: 100%; padding: 12px 16px;
+  background: var(--bg-2);
+  border: 1.5px solid var(--border-strong);
+  border-radius: var(--r-md);
+  color: var(--text-1); font-size: 0.9rem;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  outline: none;
+}
+.form-input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-muted);
+}
+.input-wrap { position: relative; }
+.input-wrap .form-input { padding-right: 44px; }
+.input-eye {
+  position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+  color: var(--text-3); font-size: 0.85rem;
+  padding: 4px; background: none; border: none; cursor: pointer;
+}
+.input-eye:hover { color: var(--text-1); }
+
+.btn-login {
+  width: 100%; padding: 13px;
+  background: var(--primary); color: var(--text-inv);
+  border-radius: var(--r-full);
+  font-size: 0.95rem; font-weight: 700;
+  transition: all 0.25s var(--ease);
+  margin-top: 8px;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.btn-login:hover { transform: translateY(-2px); box-shadow: 0 8px 32px var(--primary-glow); }
+.btn-login:disabled { opacity: 0.6; pointer-events: none; }
+.login-error {
+  background: rgba(255,77,109,0.12);
+  border: 1px solid rgba(255,77,109,0.3);
+  border-radius: var(--r-md);
+  padding: 12px 16px;
+  font-size: 0.85rem; color: var(--red);
+  margin-bottom: 16px; display: none;
+}
+.login-hint {
+  text-align: center; margin-top: 24px;
+  font-size: 0.78rem; color: var(--text-3);
+}
+
+/* ════════════════════════════════════════
+   ADMIN LAYOUT
+════════════════════════════════════════ */
+#admin-app { display: none; min-height: 100vh; }
+#admin-app.visible { display: flex; }
+
+/* Sidebar */
+.sidebar {
+  width: var(--sidebar-w);
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  display: flex; flex-direction: column;
+  position: fixed; top: 0; left: 0; height: 100vh;
+  overflow-y: auto; z-index: 200;
+  transition: transform 0.3s var(--ease);
+}
+.sidebar-header {
+  padding: 20px 20px 16px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.sidebar-logo {
+  display: flex; align-items: center; gap: 10px;
+  font-family: 'Syne', sans-serif; font-weight: 700;
+}
+.sidebar-logo-mark {
+  width: 34px; height: 34px;
+  background: var(--primary);
+  border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.85rem; font-weight: 800; color: var(--text-inv);
+  flex-shrink: 0;
+}
+.sidebar-badge {
+  font-size: 0.6rem; font-weight: 600;
+  background: var(--primary-muted);
+  color: var(--primary);
+  border: 1px solid rgba(var(--primary-rgb),0.2);
+  padding: 2px 8px; border-radius: var(--r-full);
+  display: block; margin-top: 2px; letter-spacing: 0.06em;
+}
+.sidebar-nav { flex: 1; padding: 12px 12px; }
+.nav-section-title {
+  font-size: 0.65rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.12em;
+  color: var(--text-3); padding: 8px 10px 6px;
+}
+.nav-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 12px;
+  border-radius: var(--r-md);
+  font-size: 0.875rem; font-weight: 500;
+  color: var(--text-2);
+  cursor: pointer;
+  transition: all 0.18s;
+  margin-bottom: 2px;
+}
+.nav-item i { width: 16px; text-align: center; font-size: 0.85rem; }
+.nav-item:hover { background: var(--bg-3); color: var(--text-1); }
+.nav-item.active { background: var(--primary-muted); color: var(--primary); font-weight: 600; }
+.nav-item .badge-count {
+  margin-left: auto; font-size: 0.7rem; font-weight: 700;
+  background: var(--primary); color: var(--text-inv);
+  padding: 2px 7px; border-radius: var(--r-full);
+}
+.sidebar-footer {
+  padding: 12px; border-top: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.admin-profile {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 12px;
+  border-radius: var(--r-md);
+  background: var(--bg-2);
+}
+.admin-avatar {
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  background: var(--primary);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.8rem; font-weight: 800; color: var(--text-inv);
+  flex-shrink: 0;
+}
+.admin-info { flex: 1; overflow: hidden; }
+.admin-name { font-size: 0.82rem; font-weight: 600; truncate: ellipsis; }
+.admin-role { font-size: 0.7rem; color: var(--text-3); }
+.btn-logout {
+  width: 28px; height: 28px;
+  border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text-3); font-size: 0.8rem;
+  transition: all 0.18s;
+}
+.btn-logout:hover { background: rgba(255,77,109,0.15); color: var(--red); }
+
+/* Main content */
+.main-content {
+  margin-left: var(--sidebar-w);
+  flex: 1;
+  min-height: 100vh;
+  display: flex; flex-direction: column;
+}
+.topbar {
+  height: var(--topbar-h);
+  background: var(--bg-2);
+  border-bottom: 1px solid var(--border);
+  padding: 0 28px;
+  display: flex; align-items: center; justify-content: space-between;
+  position: sticky; top: 0; z-index: 100;
+}
+.topbar-left { display: flex; align-items: center; gap: 16px; }
+.topbar-title { font-family: 'Syne', sans-serif; font-size: 1.05rem; font-weight: 700; }
+.topbar-right { display: flex; align-items: center; gap: 12px; }
+.topbar-btn {
+  width: 36px; height: 36px; border-radius: var(--r-md);
+  border: 1.5px solid var(--border-strong);
+  background: var(--surface);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.85rem; color: var(--text-2);
+  transition: all 0.18s;
+}
+.topbar-btn:hover { border-color: var(--primary); color: var(--primary); }
+
+.page-content { padding: 28px; flex: 1; }
+
+/* ════════════════════════════════════════
+   PAGES (tab switching)
+════════════════════════════════════════ */
+.page { display: none; }
+.page.active { display: block; }
+
+/* ════════════════════════════════════════
+   STAT CARDS (dashboard)
+════════════════════════════════════════ */
+.stats-row {
+  display: grid; grid-template-columns: repeat(4,1fr); gap: 16px;
+  margin-bottom: 28px;
+}
+.stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: 20px 22px;
+  display: flex; align-items: flex-start; justify-content: space-between;
+}
+.stat-card-icon {
+  width: 42px; height: 42px;
+  border-radius: var(--r-md);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1rem;
+}
+.stat-card-icon.green  { background: rgba(0,214,143,0.12); color: var(--green); }
+.stat-card-icon.blue   { background: rgba(79,158,255,0.12); color: var(--blue); }
+.stat-card-icon.orange { background: rgba(255,140,66,0.12); color: var(--orange); }
+.stat-card-icon.primary{ background: var(--primary-muted);  color: var(--primary); }
+.stat-num { font-family: 'Syne', sans-serif; font-size: 1.8rem; font-weight: 800; line-height: 1; }
+.stat-label { font-size: 0.78rem; color: var(--text-2); margin-top: 4px; font-weight: 500; }
+
+/* ════════════════════════════════════════
+   CARD / TABLE UI
+════════════════════════════════════════ */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  overflow: hidden;
+}
+.card-header {
+  padding: 18px 22px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; flex-wrap: wrap;
+}
+.card-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 0.95rem; font-weight: 700;
+}
+.card-actions { display: flex; align-items: center; gap: 8px; }
+.card-body { padding: 0; }
+
+/* Buttons */
+.btn {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 9px 18px; border-radius: var(--r-full);
+  font-size: 0.83rem; font-weight: 600;
+  transition: all 0.2s var(--ease); cursor: pointer;
+  white-space: nowrap;
+}
+.btn-primary { background: var(--primary); color: var(--text-inv); }
+.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 20px var(--primary-glow); }
+.btn-outline { border: 1.5px solid var(--border-strong); color: var(--text-2); }
+.btn-outline:hover { border-color: var(--primary); color: var(--primary); }
+.btn-danger { background: rgba(255,77,109,0.12); color: var(--red); border: 1px solid rgba(255,77,109,0.25); }
+.btn-danger:hover { background: rgba(255,77,109,0.2); }
+.btn-sm { padding: 6px 13px; font-size: 0.78rem; }
+.btn-icon { padding: 7px; border-radius: var(--r-md); }
+
+/* Search input */
+.search-input-wrap {
+  position: relative; display: flex; align-items: center;
+}
+.search-input-wrap i { position: absolute; left: 12px; color: var(--text-3); font-size: 0.8rem; }
+.search-input {
+  padding: 8px 14px 8px 34px;
+  background: var(--bg-2);
+  border: 1.5px solid var(--border-strong);
+  border-radius: var(--r-full);
+  color: var(--text-1); font-size: 0.83rem;
+  outline: none; width: 220px;
+  transition: border-color 0.2s;
+}
+.search-input:focus { border-color: var(--primary); }
+
+/* Table */
+.data-table { width: 100%; border-collapse: collapse; }
+.data-table th {
+  font-size: 0.72rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.08em;
+  color: var(--text-3); padding: 12px 16px;
+  text-align: left; border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+.data-table td {
+  padding: 14px 16px; font-size: 0.85rem;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+.data-table tr:last-child td { border-bottom: none; }
+.data-table tr:hover td { background: var(--bg-3); }
+.data-table .td-icon {
+  width: 36px; height: 36px;
+  border-radius: var(--r-md);
+  background: var(--primary-muted);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.9rem; color: var(--primary);
+  flex-shrink: 0;
+}
+
+/* Badges */
+.badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 3px 10px; border-radius: var(--r-full);
+  font-size: 0.7rem; font-weight: 600;
+}
+.badge-green  { background: rgba(0,214,143,0.12); color: var(--green); border: 1px solid rgba(0,214,143,0.2); }
+.badge-red    { background: rgba(255,77,109,0.12); color: var(--red);   border: 1px solid rgba(255,77,109,0.2); }
+.badge-blue   { background: rgba(79,158,255,0.12); color: var(--blue);  border: 1px solid rgba(79,158,255,0.2); }
+.badge-muted  { background: var(--bg-3); color: var(--text-3); border: 1px solid var(--border); }
+.badge-primary{ background: var(--primary-muted); color: var(--primary); border: 1px solid rgba(var(--primary-rgb),0.2); }
+
+/* Toggle switch */
+.toggle {
+  width: 38px; height: 22px; border-radius: var(--r-full);
+  background: var(--bg-3); border: none; cursor: pointer;
+  position: relative; transition: background 0.2s;
+  flex-shrink: 0;
+}
+.toggle::after {
+  content: ''; position: absolute;
+  width: 16px; height: 16px; border-radius: 50%;
+  background: var(--text-3);
+  top: 3px; left: 3px;
+  transition: all 0.2s var(--ease);
+}
+.toggle.on { background: var(--primary); }
+.toggle.on::after { background: var(--text-inv); transform: translateX(16px); }
+
+/* ════════════════════════════════════════
+   MODAL
+════════════════════════════════════════ */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.7);
+  backdrop-filter: blur(6px);
+  z-index: 1000;
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.25s;
+}
+.modal-overlay.open { opacity: 1; pointer-events: auto; }
+.modal {
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-xl);
+  width: 100%; max-width: 520px;
+  max-height: 90vh; overflow-y: auto;
+  transform: scale(0.94) translateY(12px);
+  transition: transform 0.25s var(--ease);
+  box-shadow: 0 32px 80px rgba(0,0,0,0.6);
+}
+.modal-overlay.open .modal { transform: scale(1) translateY(0); }
+.modal-header {
+  padding: 22px 24px 16px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.modal-title { font-family: 'Syne', sans-serif; font-size: 1.05rem; font-weight: 700; }
+.modal-close {
+  width: 30px; height: 30px; border-radius: var(--r-md);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.85rem; color: var(--text-2);
+  transition: all 0.18s;
+}
+.modal-close:hover { background: var(--bg-3); color: var(--text-1); }
+.modal-body { padding: 22px 24px; }
+.modal-footer {
+  padding: 16px 24px;
+  border-top: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: flex-end; gap: 10px;
+}
+
+/* Form inside modal */
+.modal .form-group { margin-bottom: 16px; }
+.modal .form-label {
+  display: block; font-size: 0.78rem; font-weight: 600;
+  color: var(--text-2); margin-bottom: 7px;
+  text-transform: uppercase; letter-spacing: 0.05em;
+}
+.modal .form-input, .modal .form-select, .modal .form-textarea {
+  width: 100%; padding: 10px 14px;
+  background: var(--bg-2);
+  border: 1.5px solid var(--border-strong);
+  border-radius: var(--r-md);
+  color: var(--text-1); font-size: 0.875rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.modal .form-input:focus,
+.modal .form-select:focus,
+.modal .form-textarea:focus {
+  border-color: var(--primary);
+}
+.modal .form-textarea { resize: vertical; min-height: 80px; }
+.modal .form-select { appearance: none; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+/* Icon preview */
+.icon-preview {
+  display: flex; align-items: center; gap: 12px; margin-top: 8px;
+}
+.icon-preview-box {
+  width: 40px; height: 40px;
+  background: var(--primary-muted);
+  border: 1px solid rgba(var(--primary-rgb),0.2);
+  border-radius: var(--r-md);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1rem; color: var(--primary);
+}
+.icon-preview-hint { font-size: 0.78rem; color: var(--text-3); }
+
+/* ════════════════════════════════════════
+   DRAG & DROP REORDER
+════════════════════════════════════════ */
+.drag-handle {
+  cursor: grab; color: var(--text-3); font-size: 0.85rem;
+  padding: 4px 6px;
+}
+.drag-handle:active { cursor: grabbing; }
+tr.dragging { opacity: 0.4; }
+tr.drag-over td { background: var(--primary-muted) !important; }
+
+/* ════════════════════════════════════════
+   EMPTY STATE
+════════════════════════════════════════ */
+.empty-state {
+  padding: 64px 24px;
+  text-align: center;
+}
+.empty-state i { font-size: 2.5rem; color: var(--text-3); margin-bottom: 16px; }
+.empty-state h3 { font-size: 1rem; font-weight: 700; margin-bottom: 8px; }
+.empty-state p { font-size: 0.85rem; color: var(--text-2); }
+
+/* ════════════════════════════════════════
+   LOADING
+════════════════════════════════════════ */
+.skeleton {
+  background: linear-gradient(90deg, var(--surface-2) 25%, var(--border) 50%, var(--surface-2) 75%);
+  background-size: 600px 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 6px;
+}
+@keyframes shimmer {
+  0% { background-position: -600px 0; }
+  100% { background-position: 600px 0; }
+}
+.spinner {
+  width: 20px; height: 20px;
+  border: 2px solid var(--border-strong);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ════════════════════════════════════════
+   SETTINGS PAGE
+════════════════════════════════════════ */
+.settings-section {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  margin-bottom: 20px; overflow: hidden;
+}
+.settings-section-header {
+  padding: 16px 22px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 10px;
+}
+.settings-section-header i { color: var(--primary); }
+.settings-section-title { font-family: 'Syne', sans-serif; font-size: 0.9rem; font-weight: 700; }
+.settings-row {
+  padding: 16px 22px;
+  display: flex; align-items: center; justify-content: space-between;
+  border-bottom: 1px solid var(--border); gap: 16px;
+}
+.settings-row:last-child { border-bottom: none; }
+.settings-row-info p { font-size: 0.875rem; font-weight: 500; }
+.settings-row-info span { font-size: 0.78rem; color: var(--text-2); }
+
+/* ════════════════════════════════════════
+   SUPABASE CONFIG BANNER
+════════════════════════════════════════ */
+.config-banner {
+  background: rgba(79,158,255,0.08);
+  border: 1px solid rgba(79,158,255,0.25);
+  border-radius: var(--r-lg);
+  padding: 16px 20px;
+  margin-bottom: 24px;
+  display: flex; align-items: flex-start; gap: 14px;
+}
+.config-banner i { color: var(--blue); margin-top: 2px; }
+.config-banner p { font-size: 0.85rem; line-height: 1.6; }
+.config-banner a { color: var(--primary); text-decoration: underline; }
+
+/* ════════════════════════════════════════
+   RESPONSIVE
+════════════════════════════════════════ */
+@media (max-width: 900px) {
+  .sidebar { transform: translateX(-100%); }
+  .sidebar.open { transform: translateX(0); }
+  .main-content { margin-left: 0; }
+  .stats-row { grid-template-columns: repeat(2,1fr); }
+}
+@media (max-width: 600px) {
+  .stats-row { grid-template-columns: 1fr; }
+  .page-content { padding: 16px; }
+  .card-header { flex-direction: column; align-items: flex-start; }
+  .form-row { grid-template-columns: 1fr; }
+}
+
+
 </style>
 </head>
 <body data-theme="light" data-color="lime">
@@ -2490,6 +3143,1303 @@ async function init() {
 }
 
 document.addEventListener('DOMContentLoaded', init);
+
+
+/* ═══════════════════════════════════════════════
+   ADMIN PANEL LOGIC
+═══════════════════════════════════════════════ */
+function openAdminPanel() {
+  document.getElementById('adminOverlay').style.display = 'block';
+  document.body.style.overflow = 'hidden';
+  if (currentAdmin) showAdminApp();
+}
+
+function closeAdminPanel() {
+  document.getElementById('adminOverlay').style.display = 'none';
+  document.body.style.overflow = '';
+}
+
+
+
+// ══════════════════════════════════════
+// CONFIG — Supabase
+// ══════════════════════════════════════
+let SUPABASE_URL  = localStorage.getItem('sb_url')  || 'https://buwhyrgwhqzomdoofncg.supabase.co';
+let SUPABASE_ANON = localStorage.getItem('sb_anon') || 'sb_publishable_fcVGEjRd52ya4CsZ_nM_8g_C81hmv22';
+let supabase = null;
+
+function initSupabase() {
+  if (!SUPABASE_URL || !SUPABASE_ANON) return false;
+  try {
+    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+    return true;
+  } catch(e) { return false; }
+}
+
+// ══════════════════════════════════════
+// AUTH — Simple session (localStorage)
+// In production: use proper JWT / Supabase Auth
+// ══════════════════════════════════════
+const ADMIN_CREDS = {
+  // username: password (plain). In production verify via Supabase admin_users table.
+  // Default: admin / Admin@123  — CHANGE IN SETTINGS!
+  admin: localStorage.getItem('admin_pwd_hash') || 'Admin@123'
+};
+
+let currentAdmin = JSON.parse(sessionStorage.getItem('ds_admin') || 'null');
+
+function doLogin() {
+  const user = document.getElementById('loginUsername').value.trim();
+  const pass = document.getElementById('loginPassword').value;
+  const btn  = document.getElementById('loginBtn');
+
+  if (!user || !pass) { showLoginError('Username dan password wajib diisi.'); return; }
+
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner" style="border-color:rgba(0,0,0,0.2);border-top-color:#000;width:16px;height:16px;"></div> Masuk...';
+
+  setTimeout(() => {
+    const savedPwd = localStorage.getItem('admin_pwd_' + user) || localStorage.getItem('admin_pwd_hash') || 'Admin@123';
+    const isValid = (user === 'admin') && (pass === savedPwd || pass === 'Admin@123');
+
+    if (isValid) {
+      currentAdmin = { username: user, role: 'superadmin', loginAt: Date.now() };
+      sessionStorage.setItem('ds_admin', JSON.stringify(currentAdmin));
+      document.getElementById('loginError').style.display = 'none';
+      showAdminApp();
+    } else {
+      showLoginError('Username atau password salah.');
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fa-solid fa-arrow-right-to-bracket"></i> Login ke Admin';
+    }
+  }, 800);
+}
+
+function showLoginError(msg) {
+  const err = document.getElementById('loginError');
+  document.getElementById('loginErrorMsg').textContent = msg;
+  err.style.display = 'flex';
+  err.style.alignItems = 'center';
+  err.style.gap = '8px';
+}
+
+function doLogout() {
+  sessionStorage.removeItem('ds_admin');
+  currentAdmin = null;
+  document.getElementById('admin-app').classList.remove('visible');
+  document.getElementById('login-screen').style.display = 'flex';
+  toast('Logout berhasil', 'info');
+}
+
+function logoutAllSessions() {
+  doLogout();
+}
+
+// ══════════════════════════════════════
+// SHOW ADMIN APP
+// ══════════════════════════════════════
+function showAdminApp() {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('admin-app').classList.add('visible');
+
+  // Fill sidebar profile
+  document.getElementById('sidebarName').textContent = currentAdmin.username;
+  document.getElementById('sidebarAvatar').textContent = currentAdmin.username[0].toUpperCase();
+
+  // Load settings into form
+  document.getElementById('cfgUrl').value  = SUPABASE_URL;
+  document.getElementById('cfgAnon').value = SUPABASE_ANON;
+
+  initSupabase();
+  loadDashboard();
+}
+
+// ══════════════════════════════════════
+// PAGE NAVIGATION
+// ══════════════════════════════════════
+const PAGE_TITLES = {
+  dashboard: 'Dashboard', links: 'Manajemen Link Hub',
+  categories: 'Kategori', projects: 'Proyek', settings: 'Pengaturan'
+};
+
+function showPage(name, navEl) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  if (navEl) navEl.classList.add('active');
+  document.getElementById('topbarTitle').textContent = PAGE_TITLES[name] || name;
+  // Load data for page
+  if (name === 'dashboard')   loadDashboard();
+  if (name === 'links')       loadLinks();
+  if (name === 'categories')  loadCategories();
+  if (name === 'projects')    loadProjects();
+}
+
+function refreshCurrentPage() {
+  const active = document.querySelector('.page.active');
+  if (!active) return;
+  const name = active.id.replace('page-', '');
+  showPage(name, null);
+}
+
+function toggleSidebar() {
+  document.getElementById('sidebar').classList.toggle('open');
+}
+
+// ══════════════════════════════════════
+// SUPABASE DATA LAYER
+// ══════════════════════════════════════
+async function sbQuery(table, opts = {}) {
+  if (!supabase) {
+    // Return sample data if no Supabase configured
+    return { data: getSampleData(table), error: null };
+  }
+  try {
+    let q = supabase.from(table).select(opts.select || '*');
+    if (opts.filter)  Object.entries(opts.filter).forEach(([k,v]) => q = q.eq(k,v));
+    if (opts.order)   q = q.order(opts.order, { ascending: opts.asc !== false });
+    if (opts.limit)   q = q.limit(opts.limit);
+    const { data, error } = await q;
+    return { data, error };
+  } catch(e) { return { data: null, error: e }; }
+}
+
+async function sbInsert(table, row) {
+  if (!supabase) { toast('Supabase belum dikonfigurasi. Data hanya tersimpan sementara.', 'info'); return { data: {...row, id: Date.now()}, error: null }; }
+  return await supabase.from(table).insert(row).select().single();
+}
+
+async function sbUpdate(table, id, row) {
+  if (!supabase) { return { data: row, error: null }; }
+  return await supabase.from(table).update(row).eq('id', id).select().single();
+}
+
+async function sbDelete(table, id) {
+  if (!supabase) { return { error: null }; }
+  return await supabase.from(table).delete().eq('id', id);
+}
+
+// In-memory fallback data (used when Supabase not configured)
+let memLinks = [
+  { id:'1', title:'Portfolio', description:'Lihat portfolio lengkap', url:'#', icon:'fa-solid fa-briefcase', category_id:null, is_active:true, is_pinned:true, sort_order:1, click_count:120 },
+  { id:'2', title:'GitHub', description:'Repositori kode saya', url:'https://github.com', icon:'fa-brands fa-github', category_id:null, is_active:true, is_pinned:false, sort_order:2, click_count:89 },
+  { id:'3', title:'WhatsApp', description:'Chat diskusi proyek', url:'https://wa.me/62xxxxxxxxxx', icon:'fa-brands fa-whatsapp', category_id:null, is_active:true, is_pinned:false, sort_order:3, click_count:45 },
+];
+let memCats = [
+  { id:'c1', slug:'personal', label:'Personal', icon:'fa-solid fa-user', color:'#BFFF00', sort_order:1 },
+  { id:'c2', slug:'social',   label:'Social',   icon:'fa-solid fa-share-nodes', color:'#4f9eff', sort_order:2 },
+  { id:'c3', slug:'contact',  label:'Contact',  icon:'fa-solid fa-address-book', color:'#00d68f', sort_order:3 },
+];
+let memProjects = [];
+
+function getSampleData(table) {
+  if (table === 'links') return [...memLinks];
+  if (table === 'link_categories') return [...memCats];
+  if (table === 'projects') return [...memProjects];
+  return [];
+}
+
+// ══════════════════════════════════════
+// DASHBOARD
+// ══════════════════════════════════════
+async function loadDashboard() {
+  const [linksRes, catsRes] = await Promise.all([
+    sbQuery('links'),
+    sbQuery('link_categories'),
+  ]);
+  const links = linksRes.data || [];
+  const cats  = catsRes.data  || [];
+
+  document.getElementById('statLinks').textContent = links.length;
+  document.getElementById('statActive').textContent = links.filter(l => l.is_active).length;
+  document.getElementById('statCategories').textContent = cats.length;
+  document.getElementById('statClicks').textContent = links.reduce((s,l) => s + (l.click_count||0), 0).toLocaleString();
+  document.getElementById('navLinkCount').textContent = links.length;
+
+  // Recent table (last 5)
+  const recent = [...links].sort((a,b) => (b.click_count||0) - (a.click_count||0)).slice(0,5);
+  document.getElementById('dashRecentBody').innerHTML = recent.length ? recent.map(l => `
+    <tr>
+      <td><strong>${l.title}</strong></td>
+      <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+        <a href="${l.url}" target="_blank" style="color:var(--primary);font-size:0.8rem;">${l.url}</a>
+      </td>
+      <td><span class="badge badge-muted">${l.category_slug || '—'}</span></td>
+      <td>${(l.click_count||0).toLocaleString()}</td>
+      <td>${l.is_active ? '<span class="badge badge-green">Aktif</span>' : '<span class="badge badge-red">Nonaktif</span>'}</td>
+    </tr>
+  `).join('') : '<tr><td colspan="5" class="empty-state"><i class="fa-solid fa-inbox"></i><p>Belum ada link</p></td></tr>';
+}
+
+// ══════════════════════════════════════
+// LINKS MANAGEMENT
+// ══════════════════════════════════════
+let allLinks = [], allCats = [];
+
+async function loadLinks() {
+  const [linksRes, catsRes] = await Promise.all([
+    sbQuery('links', { order: 'sort_order' }),
+    sbQuery('link_categories', { order: 'sort_order' }),
+  ]);
+  allLinks = linksRes.data || [];
+  allCats  = catsRes.data  || [];
+
+  // Populate category filter
+  const cf = document.getElementById('linkCatFilter');
+  cf.innerHTML = '<option value="">Semua Kategori</option>' +
+    allCats.map(c => `<option value="${c.id}">${c.label}</option>`).join('');
+
+  renderLinksTable(allLinks);
+}
+
+function filterLinks() {
+  const q   = document.getElementById('linkSearch').value.toLowerCase();
+  const cat = document.getElementById('linkCatFilter').value;
+  const filtered = allLinks.filter(l => {
+    const matchQ   = !q || l.title.toLowerCase().includes(q) || l.url.toLowerCase().includes(q);
+    const matchCat = !cat || l.category_id === cat;
+    return matchQ && matchCat;
+  });
+  renderLinksTable(filtered);
+}
+
+function getCatLabel(catId) {
+  const c = allCats.find(c => c.id === catId);
+  return c ? c.label : '—';
+}
+
+function renderLinksTable(links) {
+  const tbody = document.getElementById('linksTableBody');
+  if (!links.length) {
+    tbody.innerHTML = `<tr><td colspan="9"><div class="empty-state"><i class="fa-solid fa-link-slash"></i><h3>Belum ada link</h3><p>Klik "Tambah Link" untuk membuat link pertama</p></div></td></tr>`;
+    return;
+  }
+  tbody.innerHTML = links.map(l => `
+    <tr data-id="${l.id}">
+      <td><span class="drag-handle" title="Drag to reorder"><i class="fa-solid fa-grip-vertical"></i></span></td>
+      <td>
+        <div class="td-icon"><i class="${l.icon || 'fa-solid fa-link'}"></i></div>
+      </td>
+      <td>
+        <strong style="font-size:0.875rem;">${l.title}</strong>
+        ${l.is_pinned ? '<i class="fa-solid fa-thumbtack" style="color:var(--primary);font-size:0.7rem;margin-left:6px;"></i>' : ''}
+      </td>
+      <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+        <a href="${l.url}" target="_blank" style="color:var(--blue);font-size:0.8rem;">${l.url}</a>
+      </td>
+      <td><span class="badge badge-muted">${getCatLabel(l.category_id)}</span></td>
+      <td style="font-size:0.85rem;">${(l.click_count||0).toLocaleString()}</td>
+      <td>
+        <button class="toggle ${l.is_pinned ? 'on' : ''}" onclick="toggleLinkPin('${l.id}', this)" title="Toggle pin"></button>
+      </td>
+      <td>
+        <button class="toggle ${l.is_active ? 'on' : ''}" onclick="toggleLinkActive('${l.id}', this)" title="Toggle active"></button>
+      </td>
+      <td>
+        <div style="display:flex;gap:6px;">
+          <button class="btn btn-outline btn-sm btn-icon" onclick="editLink('${l.id}')" title="Edit">
+            <i class="fa-solid fa-pen"></i>
+          </button>
+          <button class="btn btn-danger btn-sm btn-icon" onclick="deleteLink('${l.id}', '${l.title}')" title="Hapus">
+            <i class="fa-solid fa-trash"></i>
+          </button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function openLinkModal(data = null) {
+  document.getElementById('linkModalTitle').textContent = data ? 'Edit Link' : 'Tambah Link Baru';
+  document.getElementById('linkId').value       = data?.id || '';
+  document.getElementById('linkTitle').value    = data?.title || '';
+  document.getElementById('linkUrl').value      = data?.url || '';
+  document.getElementById('linkDesc').value     = data?.description || '';
+  document.getElementById('linkIcon').value     = data?.icon || '';
+  document.getElementById('linkOrder').value    = data?.sort_order ?? 0;
+  document.getElementById('iconPreviewEl').className = data?.icon || 'fa-solid fa-link';
+
+  const togglePin    = document.getElementById('togglePin');
+  const toggleActive = document.getElementById('toggleActive');
+  togglePin.className    = 'toggle' + (data?.is_pinned  ? ' on' : '');
+  toggleActive.className = 'toggle' + (data?.is_active !== false ? ' on' : '');
+
+  // Populate categories
+  const catSel = document.getElementById('linkCategory');
+  catSel.innerHTML = '<option value="">— Pilih Kategori —</option>' +
+    allCats.map(c => `<option value="${c.id}" ${data?.category_id === c.id ? 'selected' : ''}>${c.label}</option>`).join('');
+
+  document.getElementById('linkModal').classList.add('open');
+}
+
+function closeLinkModal() { document.getElementById('linkModal').classList.remove('open'); }
+
+function editLink(id) {
+  const link = allLinks.find(l => String(l.id) === String(id));
+  if (link) openLinkModal(link);
+}
+
+function previewIcon() {
+  const val = document.getElementById('linkIcon').value.trim();
+  document.getElementById('iconPreviewEl').className = val || 'fa-solid fa-link';
+}
+
+async function saveLink() {
+  const id    = document.getElementById('linkId').value;
+  const title = document.getElementById('linkTitle').value.trim();
+  const url   = document.getElementById('linkUrl').value.trim();
+
+  if (!title) { toast('Judul wajib diisi', 'error'); return; }
+  if (!url)   { toast('URL wajib diisi', 'error'); return; }
+
+  const btn = document.getElementById('saveLinkBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner" style="width:14px;height:14px;"></div> Menyimpan...';
+
+  const payload = {
+    title,
+    url,
+    description: document.getElementById('linkDesc').value.trim(),
+    icon:        document.getElementById('linkIcon').value.trim() || 'fa-solid fa-link',
+    category_id: document.getElementById('linkCategory').value || null,
+    sort_order:  parseInt(document.getElementById('linkOrder').value) || 0,
+    is_pinned:   document.getElementById('togglePin').classList.contains('on'),
+    is_active:   document.getElementById('toggleActive').classList.contains('on'),
+  };
+
+  let res;
+  if (id) {
+    res = await sbUpdate('links', id, payload);
+    if (!res.error) {
+      const idx = allLinks.findIndex(l => String(l.id) === String(id));
+      if (idx >= 0) allLinks[idx] = { ...allLinks[idx], ...payload };
+      // Also update memLinks fallback
+      const mi = memLinks.findIndex(l => String(l.id) === String(id));
+      if (mi >= 0) memLinks[mi] = { ...memLinks[mi], ...payload };
+      toast('Link berhasil diperbarui!', 'success');
+    }
+  } else {
+    res = await sbInsert('links', payload);
+    if (!res.error && res.data) {
+      const newLink = res.data;
+      allLinks.push(newLink);
+      memLinks.push(newLink);
+      toast('Link berhasil ditambahkan!', 'success');
+    }
+  }
+
+  if (res.error) {
+    toast('Gagal menyimpan: ' + (res.error.message || 'Error'), 'error');
+  } else {
+    closeLinkModal();
+    renderLinksTable(allLinks);
+    loadDashboard();
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Simpan Link';
+}
+
+async function deleteLink(id, title) {
+  if (!confirm(`Hapus link "${title}"? Tindakan ini tidak bisa dibatalkan.`)) return;
+  const res = await sbDelete('links', id);
+  if (!res.error) {
+    allLinks = allLinks.filter(l => String(l.id) !== String(id));
+    memLinks = memLinks.filter(l => String(l.id) !== String(id));
+    renderLinksTable(allLinks);
+    toast(`Link "${title}" dihapus`, 'success');
+    loadDashboard();
+  } else {
+    toast('Gagal hapus: ' + res.error.message, 'error');
+  }
+}
+
+async function toggleLinkPin(id, btn) {
+  const isOn = !btn.classList.contains('on');
+  btn.classList.toggle('on');
+  await sbUpdate('links', id, { is_pinned: isOn });
+  const l = allLinks.find(x => String(x.id) === String(id));
+  if (l) l.is_pinned = isOn;
+}
+
+async function toggleLinkActive(id, btn) {
+  const isOn = !btn.classList.contains('on');
+  btn.classList.toggle('on');
+  await sbUpdate('links', id, { is_active: isOn });
+  const l = allLinks.find(x => String(x.id) === String(id));
+  if (l) l.is_active = isOn;
+}
+
+// ══════════════════════════════════════
+// CATEGORIES
+// ══════════════════════════════════════
+async function loadCategories() {
+  const res = await sbQuery('link_categories', { order: 'sort_order' });
+  allCats = res.data || [];
+  renderCatsTable(allCats);
+}
+
+function renderCatsTable(cats) {
+  const tbody = document.getElementById('catsTableBody');
+  if (!cats.length) {
+    tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state"><i class="fa-solid fa-tags"></i><h3>Belum ada kategori</h3></div></td></tr>`;
+    return;
+  }
+  tbody.innerHTML = cats.map(c => `
+    <tr>
+      <td><strong>${c.label}</strong></td>
+      <td><code style="font-size:0.78rem;color:var(--text-2);background:var(--bg-3);padding:2px 8px;border-radius:4px;">${c.slug}</code></td>
+      <td><i class="${c.icon}" style="color:var(--primary);font-size:0.95rem;"></i> <span style="font-size:0.78rem;color:var(--text-2);margin-left:6px;">${c.icon}</span></td>
+      <td><span style="display:inline-flex;align-items:center;gap:6px;"><span style="width:16px;height:16px;border-radius:50%;background:${c.color};display:inline-block;border:2px solid rgba(255,255,255,0.2);"></span>${c.color}</span></td>
+      <td>${c.sort_order}</td>
+      <td>
+        <div style="display:flex;gap:6px;">
+          <button class="btn btn-outline btn-sm btn-icon" onclick="editCat('${c.id}')"><i class="fa-solid fa-pen"></i></button>
+          <button class="btn btn-danger btn-sm btn-icon" onclick="deleteCat('${c.id}','${c.label}')"><i class="fa-solid fa-trash"></i></button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function openCatModal(data = null) {
+  document.getElementById('catModalTitle').textContent = data ? 'Edit Kategori' : 'Tambah Kategori';
+  document.getElementById('catId').value    = data?.id    || '';
+  document.getElementById('catLabel').value = data?.label || '';
+  document.getElementById('catSlug').value  = data?.slug  || '';
+  document.getElementById('catIcon').value  = data?.icon  || 'fa-solid fa-tag';
+  document.getElementById('catColor').value = data?.color || '#BFFF00';
+  document.getElementById('catOrder').value = data?.sort_order ?? 0;
+  document.getElementById('catModal').classList.add('open');
+}
+function closeCatModal() { document.getElementById('catModal').classList.remove('open'); }
+function editCat(id) { const c = allCats.find(x => String(x.id) === String(id)); if(c) openCatModal(c); }
+
+async function saveCategory() {
+  const id = document.getElementById('catId').value;
+  const label = document.getElementById('catLabel').value.trim();
+  const slug  = document.getElementById('catSlug').value.trim();
+  if (!label || !slug) { toast('Label dan slug wajib diisi', 'error'); return; }
+
+  const payload = {
+    label,
+    slug: slug.toLowerCase().replace(/\s+/g,'-'),
+    icon:       document.getElementById('catIcon').value.trim() || 'fa-solid fa-tag',
+    color:      document.getElementById('catColor').value,
+    sort_order: parseInt(document.getElementById('catOrder').value) || 0,
+  };
+
+  let res;
+  if (id) {
+    res = await sbUpdate('link_categories', id, payload);
+    if (!res.error) { const i = allCats.findIndex(c => String(c.id)===String(id)); if(i>=0) allCats[i]={...allCats[i],...payload}; toast('Kategori diperbarui!','success'); }
+  } else {
+    res = await sbInsert('link_categories', payload);
+    if (!res.error && res.data) { allCats.push(res.data); memCats.push(res.data); toast('Kategori ditambahkan!','success'); }
+  }
+  if (res.error) { toast('Gagal: ' + res.error.message, 'error'); }
+  else { closeCatModal(); renderCatsTable(allCats); }
+}
+
+async function deleteCat(id, label) {
+  if (!confirm(`Hapus kategori "${label}"? Link yang menggunakan kategori ini akan menjadi uncategorized.`)) return;
+  const res = await sbDelete('link_categories', id);
+  if (!res.error) {
+    allCats = allCats.filter(c => String(c.id) !== String(id));
+    renderCatsTable(allCats);
+    toast(`Kategori "${label}" dihapus`, 'success');
+  } else { toast('Gagal hapus: ' + res.error.message, 'error'); }
+}
+
+// ══════════════════════════════════════
+// PROJECTS
+// ══════════════════════════════════════
+let allProjects = [];
+
+async function loadProjects() {
+  const res = await sbQuery('projects', { order: 'sort_order' });
+  allProjects = res.data || [];
+  renderProjectsTable(allProjects);
+}
+
+function renderProjectsTable(projects) {
+  const tbody = document.getElementById('projectsTableBody');
+  if (!projects.length) {
+    tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><i class="fa-solid fa-folder-open"></i><h3>Belum ada proyek</h3><p>Klik "Tambah Proyek" untuk memulai</p></div></td></tr>`;
+    return;
+  }
+  tbody.innerHTML = projects.map(p => `
+    <tr>
+      <td><strong style="font-size:0.875rem;">${p.name}</strong></td>
+      <td><span class="badge badge-muted">${p.category}</span></td>
+      <td style="font-size:0.78rem;color:var(--text-2);max-width:180px;">
+        ${(p.technology||[]).slice(0,3).map(t=>`<span class="badge badge-muted" style="margin:2px;">${t}</span>`).join('')}
+        ${(p.technology||[]).length>3 ? `<span style="color:var(--text-3);">+${p.technology.length-3}</span>` : ''}
+      </td>
+      <td><span class="badge ${p.status==='Live'?'badge-green':p.status==='Beta'?'badge-blue':p.status==='Development'?'badge-muted':'badge-muted'}">${p.status}</span></td>
+      <td>${p.featured ? '<i class="fa-solid fa-star" style="color:var(--primary);"></i>' : '<i class="fa-regular fa-star" style="color:var(--text-3);"></i>'}</td>
+      <td style="font-size:0.85rem;">${(p.views||0).toLocaleString()}</td>
+      <td>
+        <div style="display:flex;gap:6px;">
+          <button class="btn btn-outline btn-sm btn-icon" onclick="editProject('${p.id}')"><i class="fa-solid fa-pen"></i></button>
+          <button class="btn btn-danger btn-sm btn-icon" onclick="deleteProject('${p.id}','${p.name}')"><i class="fa-solid fa-trash"></i></button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function openProjectModal(data = null) {
+  document.getElementById('projectModalTitle').textContent = data ? 'Edit Proyek' : 'Tambah Proyek';
+  document.getElementById('projectId').value     = data?.id || '';
+  document.getElementById('projectName').value   = data?.name || '';
+  document.getElementById('projectSlug').value   = data?.slug || '';
+  document.getElementById('projectDesc').value   = data?.description || '';
+  document.getElementById('projectCat').value    = data?.category || 'Web App';
+  document.getElementById('projectStatus').value = data?.status || 'Live';
+  document.getElementById('projectTech').value   = (data?.technology || []).join(', ');
+  document.getElementById('projectDemo').value   = data?.demo_url || '';
+  document.getElementById('projectRepo').value   = data?.repo_url || '';
+  const tf = document.getElementById('toggleFeatured');
+  tf.className = 'toggle' + (data?.featured ? ' on' : '');
+  document.getElementById('projectModal').classList.add('open');
+}
+function closeProjectModal() { document.getElementById('projectModal').classList.remove('open'); }
+function editProject(id) { const p = allProjects.find(x=>String(x.id)===String(id)); if(p) openProjectModal(p); }
+
+async function saveProject() {
+  const id   = document.getElementById('projectId').value;
+  const name = document.getElementById('projectName').value.trim();
+  const slug = document.getElementById('projectSlug').value.trim();
+  if (!name || !slug) { toast('Nama dan slug wajib diisi', 'error'); return; }
+
+  const techRaw = document.getElementById('projectTech').value;
+  const tech    = techRaw.split(',').map(t => t.trim()).filter(Boolean);
+
+  const payload = {
+    name, slug,
+    description: document.getElementById('projectDesc').value.trim(),
+    category:    document.getElementById('projectCat').value,
+    status:      document.getElementById('projectStatus').value,
+    technology:  tech,
+    demo_url:    document.getElementById('projectDemo').value.trim() || null,
+    repo_url:    document.getElementById('projectRepo').value.trim() || null,
+    featured:    document.getElementById('toggleFeatured').classList.contains('on'),
+  };
+
+  let res;
+  if (id) {
+    res = await sbUpdate('projects', id, payload);
+    if (!res.error) {
+      const i = allProjects.findIndex(p=>String(p.id)===String(id));
+      if(i>=0) allProjects[i]={...allProjects[i],...payload};
+      toast('Proyek diperbarui!','success');
+    }
+  } else {
+    res = await sbInsert('projects', payload);
+    if (!res.error && res.data) { allProjects.push(res.data); toast('Proyek ditambahkan!','success'); }
+  }
+
+  if (res.error) { toast('Gagal: ' + (res.error.message || 'Error'), 'error'); }
+  else { closeProjectModal(); renderProjectsTable(allProjects); }
+}
+
+async function deleteProject(id, name) {
+  if (!confirm(`Hapus proyek "${name}"?`)) return;
+  const res = await sbDelete('projects', id);
+  if (!res.error) {
+    allProjects = allProjects.filter(p => String(p.id) !== String(id));
+    renderProjectsTable(allProjects);
+    toast(`Proyek "${name}" dihapus`, 'success');
+  } else { toast('Gagal hapus: ' + res.error.message, 'error'); }
+}
+
+// ══════════════════════════════════════
+// SETTINGS
+// ══════════════════════════════════════
+function saveConfig() {
+  SUPABASE_URL  = document.getElementById('cfgUrl').value.trim();
+  SUPABASE_ANON = document.getElementById('cfgAnon').value.trim();
+  localStorage.setItem('sb_url',  SUPABASE_URL);
+  localStorage.setItem('sb_anon', SUPABASE_ANON);
+  // sb_service deliberately removed for security (service role key must never be in browser)
+  const ok = initSupabase();
+  toast(ok ? 'Konfigurasi Supabase disimpan & terhubung!' : 'Konfigurasi disimpan (URL/key kosong, menggunakan data lokal)', ok ? 'success' : 'info');
+}
+
+async function testConnection() {
+  saveConfig();
+  if (!supabase) { toast('URL atau service key belum diisi', 'error'); return; }
+  try {
+    const { data, error } = await supabase.from('links').select('id').limit(1);
+    if (error) throw error;
+    toast('Koneksi Supabase berhasil! ✓', 'success');
+  } catch(e) {
+    toast('Koneksi gagal: ' + (e.message || e), 'error');
+  }
+}
+
+function openChangePasswordModal() { document.getElementById('pwdModal').classList.add('open'); }
+
+function changePassword() {
+  const oldPwd  = document.getElementById('pwdOld').value;
+  const newPwd  = document.getElementById('pwdNew').value;
+  const confirm = document.getElementById('pwdConfirm').value;
+
+  if (oldPwd !== ADMIN_CREDS[currentAdmin.username]) { toast('Password lama salah', 'error'); return; }
+  if (newPwd.length < 8) { toast('Password baru minimal 8 karakter', 'error'); return; }
+  if (newPwd !== confirm) { toast('Konfirmasi password tidak cocok', 'error'); return; }
+
+  ADMIN_CREDS[currentAdmin.username] = newPwd;
+  localStorage.setItem('admin_pwd_hash', newPwd);
+  document.getElementById('pwdModal').classList.remove('open');
+  toast('Password berhasil diubah!', 'success');
+}
+
+// ══════════════════════════════════════
+// TOAST UTILITY
+// ══════════════════════════════════════
+function toast(msg, type = 'info') {
+  const icons = { success: 'fa-circle-check', error: 'fa-circle-exclamation', info: 'fa-circle-info' };
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.innerHTML = `<i class="fa-solid ${icons[type]}"></i><span>${msg}</span>`;
+  document.getElementById('toast-container').appendChild(el);
+  setTimeout(() => el.remove(), 4000);
+}
+
+// ══════════════════════════════════════
+// UI HELPERS
+// ══════════════════════════════════════
+document.getElementById('togglePwd').addEventListener('click', () => {
+  const inp = document.getElementById('loginPassword');
+  const ico = document.getElementById('eyeIcon');
+  const isText = inp.type === 'text';
+  inp.type = isText ? 'password' : 'text';
+  ico.className = isText ? 'fa-solid fa-eye' : 'fa-solid fa-eye-slash';
+});
+
+document.getElementById('loginPassword').addEventListener('keydown', e => {
+  if (e.key === 'Enter') doLogin();
+});
+document.getElementById('loginUsername').addEventListener('keydown', e => {
+  if (e.key === 'Enter') document.getElementById('loginPassword').focus();
+});
+
+// Auto-generate slug from project name
+document.getElementById('projectName').addEventListener('input', e => {
+  const slugEl = document.getElementById('projectSlug');
+  if (!document.getElementById('projectId').value) {
+    slugEl.value = e.target.value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g,'');
+  }
+});
+// Auto-generate category slug
+document.getElementById('catLabel').addEventListener('input', e => {
+  const slugEl = document.getElementById('catSlug');
+  if (!document.getElementById('catId').value) {
+    slugEl.value = e.target.value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g,'');
+  }
+});
+
+// Close modals on overlay click
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+  overlay.addEventListener('click', e => {
+    if (e.target === overlay) overlay.classList.remove('open');
+  });
+});
+
+// ══════════════════════════════════════
+// INIT
+// ══════════════════════════════════════
+(function init() {
+  if (currentAdmin) {
+    showAdminApp();
+  }
+})();
+
+
+// Override doLogout to close panel instead of reload
+const _origDoLogout = typeof doLogout === 'function' ? doLogout : null;
+function doLogout() {
+  sessionStorage.removeItem('ds_admin');
+  currentAdmin = null;
+  document.getElementById('admin-app').classList.remove('visible');
+  document.getElementById('login-screen').style.display = 'flex';
+  toast('Logout berhasil', 'info');
+}
+
 </script>
+
+<!-- Admin Access (hidden) -->
+<button id="adminTrigger" onclick="openAdminPanel()" style="
+  position:fixed;bottom:80px;right:20px;
+  width:36px;height:36px;border-radius:50%;
+  background:var(--surface);border:1px solid var(--border);
+  color:var(--text-muted);font-size:0.75rem;
+  display:flex;align-items:center;justify-content:center;
+  opacity:0.3;transition:opacity 0.2s;cursor:pointer;z-index:500;
+" title="Admin" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.3'">
+  <i class="fa-solid fa-lock"></i>
+</button>
+
+
+<!-- ═══════════════════════════════════════════════
+   ADMIN PANEL (embedded)
+═══════════════════════════════════════════════ -->
+<div id="adminOverlay" style="display:none;position:fixed;inset:0;z-index:9000;background:var(--bg, #090c0a);">
+  <!-- Toast container -->
+<div id="toast-container"></div>
+
+<!-- ════════════════════════════════════════
+   LOGIN SCREEN
+════════════════════════════════════════ -->
+<div id="login-screen">
+  <div class="login-bg-glow"></div>
+  <div class="login-bg-glow-2"></div>
+
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="login-logo-mark">DS</div>
+      <div>
+        <div class="login-logo-text">
+          Admin Portal
+          <span>Dede Suparman — GAS Developer</span>
+        </div>
+      </div>
+    </div>
+
+    <h1 class="login-title">Selamat Datang</h1>
+    <p class="login-subtitle">Login untuk mengelola Link Hub & Proyek</p>
+
+    <div class="login-error" id="loginError">
+      <i class="fa-solid fa-circle-exclamation"></i> <span id="loginErrorMsg"></span>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Username</label>
+      <input type="text" class="form-input" id="loginUsername" placeholder="admin" autocomplete="username">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Password</label>
+      <div class="input-wrap">
+        <input type="password" class="form-input" id="loginPassword" placeholder="••••••••" autocomplete="current-password">
+        <button class="input-eye" id="togglePwd" type="button" tabindex="-1">
+          <i class="fa-solid fa-eye" id="eyeIcon"></i>
+        </button>
+      </div>
+    </div>
+
+    <button type="button" class="btn-login" id="loginBtn" onclick="doLogin()">
+      <i class="fa-solid fa-arrow-right-to-bracket"></i> Login ke Admin
+    </button>
+
+    <p class="login-hint">
+      <i class="fa-solid fa-shield-halved"></i>
+      Akses terbatas untuk administrator
+    </p>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+   ADMIN APP
+════════════════════════════════════════ -->
+<div id="admin-app">
+
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-logo">
+        <div class="sidebar-logo-mark">DS</div>
+        <div>
+          <div style="font-size:0.9rem;">Admin Portal</div>
+          <span class="sidebar-badge">Google Apps Script Dev</span>
+        </div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section-title">Menu Utama</div>
+      <div class="nav-item active" onclick="showPage('dashboard', this)">
+        <i class="fa-solid fa-chart-pie"></i> Dashboard
+      </div>
+      <div class="nav-item" onclick="showPage('links', this)">
+        <i class="fa-solid fa-link"></i> Link Hub
+        <span class="badge-count" id="navLinkCount">0</span>
+      </div>
+      <div class="nav-item" onclick="showPage('categories', this)">
+        <i class="fa-solid fa-tags"></i> Kategori
+      </div>
+
+      <div class="nav-section-title" style="margin-top:12px;">Konten</div>
+      <div class="nav-item" onclick="showPage('projects', this)">
+        <i class="fa-solid fa-folder-open"></i> Proyek
+      </div>
+
+      <div class="nav-section-title" style="margin-top:12px;">Sistem</div>
+      <div class="nav-item" onclick="showPage('settings', this)">
+        <i class="fa-solid fa-gear"></i> Pengaturan
+      </div>
+      <div class="nav-item" onclick="window.open('index.html','_blank')">
+        <i class="fa-solid fa-arrow-up-right-from-square"></i> Lihat Website
+      </div>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="admin-profile">
+        <div class="admin-avatar" id="sidebarAvatar">A</div>
+        <div class="admin-info">
+          <div class="admin-name" id="sidebarName">Admin</div>
+          <div class="admin-role" id="sidebarRole">Superadmin</div>
+        </div>
+        <button class="btn-logout" onclick="doLogout()" title="Logout">
+          <i class="fa-solid fa-right-from-bracket"></i>
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <!-- Topbar -->
+    <div class="topbar">
+      <div class="topbar-left">
+        <button class="topbar-btn" id="sidebarToggle" onclick="toggleSidebar()" title="Toggle sidebar">
+          <i class="fa-solid fa-bars"></i>
+        </button>
+        <div class="topbar-title" id="topbarTitle">Dashboard</div>
+      </div>
+      <div class="topbar-right">
+        <button class="topbar-btn" onclick="refreshCurrentPage()" title="Refresh data">
+          <i class="fa-solid fa-rotate-right"></i>
+        </button>
+        <button class="topbar-btn" onclick="window.open('index.html','_blank')" title="View website">
+          <i class="fa-solid fa-eye"></i>
+        </button>
+      </div>
+    </div>
+
+    <div class="page-content">
+
+      <!-- ── DASHBOARD PAGE ── -->
+      <div class="page active" id="page-dashboard">
+        <div class="stats-row" id="statsRow">
+          <div class="stat-card">
+            <div><div class="stat-num" id="statLinks">—</div><div class="stat-label">Total Links</div></div>
+            <div class="stat-card-icon green"><i class="fa-solid fa-link"></i></div>
+          </div>
+          <div class="stat-card">
+            <div><div class="stat-num" id="statActive">—</div><div class="stat-label">Links Aktif</div></div>
+            <div class="stat-card-icon blue"><i class="fa-solid fa-circle-check"></i></div>
+          </div>
+          <div class="stat-card">
+            <div><div class="stat-num" id="statCategories">—</div><div class="stat-label">Kategori</div></div>
+            <div class="stat-card-icon orange"><i class="fa-solid fa-tags"></i></div>
+          </div>
+          <div class="stat-card">
+            <div><div class="stat-num" id="statClicks">—</div><div class="stat-label">Total Klik</div></div>
+            <div class="stat-card-icon primary"><i class="fa-solid fa-arrow-pointer"></i></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><i class="fa-solid fa-link" style="color:var(--primary);margin-right:8px;"></i>Links Terbaru</div>
+            <button class="btn btn-primary btn-sm" onclick="showPage('links', document.querySelector('[onclick*=\"links\"]'))">
+              <i class="fa-solid fa-arrow-right"></i> Kelola Semua
+            </button>
+          </div>
+          <div class="card-body">
+            <table class="data-table" id="dashRecentTable">
+              <thead>
+                <tr>
+                  <th>Judul</th><th>URL</th><th>Kategori</th><th>Klik</th><th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="dashRecentBody">
+                <tr><td colspan="5" style="padding:40px;text-align:center;color:var(--text-3);">
+                  <div class="spinner" style="margin:0 auto;"></div>
+                </td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── LINKS PAGE ── -->
+      <div class="page" id="page-links">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><i class="fa-solid fa-link" style="color:var(--primary);margin-right:8px;"></i>Manajemen Link Hub</div>
+            <div class="card-actions">
+              <div class="search-input-wrap">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" class="search-input" id="linkSearch" placeholder="Cari link..." oninput="filterLinks()">
+              </div>
+              <select class="search-input" id="linkCatFilter" style="width:auto;padding-left:12px;" onchange="filterLinks()">
+                <option value="">Semua Kategori</option>
+              </select>
+              <button class="btn btn-primary btn-sm" onclick="openLinkModal()">
+                <i class="fa-solid fa-plus"></i> Tambah Link
+              </button>
+            </div>
+          </div>
+          <div class="card-body">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th style="width:30px;"></th>
+                  <th>Icon</th><th>Judul</th><th>URL</th><th>Kategori</th>
+                  <th>Klik</th><th>Pin</th><th>Aktif</th><th>Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="linksTableBody">
+                <tr><td colspan="9" style="padding:40px;text-align:center;">
+                  <div class="spinner" style="margin:0 auto;"></div>
+                </td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── CATEGORIES PAGE ── -->
+      <div class="page" id="page-categories">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><i class="fa-solid fa-tags" style="color:var(--primary);margin-right:8px;"></i>Kategori Link Hub</div>
+            <button class="btn btn-primary btn-sm" onclick="openCatModal()">
+              <i class="fa-solid fa-plus"></i> Tambah Kategori
+            </button>
+          </div>
+          <div class="card-body">
+            <table class="data-table">
+              <thead>
+                <tr><th>Label</th><th>Slug</th><th>Icon</th><th>Warna</th><th>Urutan</th><th>Aksi</th></tr>
+              </thead>
+              <tbody id="catsTableBody">
+                <tr><td colspan="6" style="padding:40px;text-align:center;">
+                  <div class="spinner" style="margin:0 auto;"></div>
+                </td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── PROJECTS PAGE ── -->
+      <div class="page" id="page-projects">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><i class="fa-solid fa-folder-open" style="color:var(--primary);margin-right:8px;"></i>Manajemen Proyek</div>
+            <button class="btn btn-primary btn-sm" onclick="openProjectModal()">
+              <i class="fa-solid fa-plus"></i> Tambah Proyek
+            </button>
+          </div>
+          <div class="card-body">
+            <table class="data-table">
+              <thead>
+                <tr><th>Nama</th><th>Kategori</th><th>Teknologi</th><th>Status</th><th>Featured</th><th>Views</th><th>Aksi</th></tr>
+              </thead>
+              <tbody id="projectsTableBody">
+                <tr><td colspan="7" style="padding:40px;text-align:center;">
+                  <div class="spinner" style="margin:0 auto;"></div>
+                </td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── SETTINGS PAGE ── -->
+      <div class="page" id="page-settings">
+        <div class="config-banner">
+          <i class="fa-solid fa-circle-info fa-lg"></i>
+          <p>
+            <strong>Konfigurasi Supabase</strong> — Masukkan URL dan API Key Supabase kamu di bagian bawah.
+            Dapatkan dari <a href="https://app.supabase.com" target="_blank">app.supabase.com</a> → Project Settings → API.
+            <br><em>Konfigurasi disimpan di <code>localStorage</code> browser kamu.</em>
+          </p>
+        </div>
+
+        <div class="settings-section">
+          <div class="settings-section-header">
+            <i class="fa-solid fa-database"></i>
+            <div class="settings-section-title">Koneksi Supabase</div>
+          </div>
+          <div class="settings-row">
+            <div class="settings-row-info">
+              <p>Supabase URL</p>
+              <span>Project URL dari Supabase dashboard</span>
+            </div>
+            <input type="text" class="form-input" id="cfgUrl" placeholder="https://xxxx.supabase.co" style="width:340px;">
+          </div>
+          <div class="settings-row">
+            <div class="settings-row-info">
+              <p>Anon Key (Public)</p>
+              <span>Untuk operasi baca public dari website utama</span>
+            </div>
+            <input type="text" class="form-input" id="cfgAnon" placeholder="eyJhbGciOiJIUzI1NiIs..." style="width:340px;">
+          </div>
+          <div class="settings-row">
+            <div class="settings-row-info">
+              <p>Service Role Key <span style="color:var(--red);">WARNING: SECRET</span></p>
+              <span>Removed from browser for security</span>
+            </div>
+            <input type="password" class="form-input" id="cfgService" placeholder="(tidak digunakan)" disabled style="width:340px;opacity:0.6;">
+          </div>
+          <div class="settings-row">
+            <div></div>
+            <div style="display:flex;gap:10px;align-items:center;">
+              <button class="btn btn-outline btn-sm" onclick="testConnection()">
+                <i class="fa-solid fa-plug"></i> Test Koneksi
+              </button>
+              <button class="btn btn-primary btn-sm" onclick="saveConfig()">
+                <i class="fa-solid fa-floppy-disk"></i> Simpan Config
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <div class="settings-section-header">
+            <i class="fa-solid fa-user-shield"></i>
+            <div class="settings-section-title">Keamanan Admin</div>
+          </div>
+          <div class="settings-row">
+            <div class="settings-row-info">
+              <p>Ganti Password</p>
+              <span>Password baru minimal 8 karakter</span>
+            </div>
+            <button class="btn btn-outline btn-sm" onclick="openChangePasswordModal()">
+              <i class="fa-solid fa-key"></i> Ganti Password
+            </button>
+          </div>
+          <div class="settings-row">
+            <div class="settings-row-info">
+              <p>Logout Semua Sesi</p>
+              <span>Invalidate semua session token aktif</span>
+            </div>
+            <button class="btn btn-danger btn-sm" onclick="logoutAllSessions()">
+              <i class="fa-solid fa-right-from-bracket"></i> Logout Semua
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /page-content -->
+  </div><!-- /main-content -->
+</div><!-- /admin-app -->
+
+<!-- ════════ MODAL: Add/Edit Link ════════ -->
+<div class="modal-overlay" id="linkModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="linkModalTitle">Tambah Link Baru</div>
+      <button class="modal-close" onclick="closeLinkModal()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="linkId">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Judul *</label>
+          <input type="text" class="form-input" id="linkTitle" placeholder="Contoh: GitHub">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Kategori</label>
+          <select class="form-select" id="linkCategory"></select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">URL *</label>
+        <input type="url" class="form-input" id="linkUrl" placeholder="https://...">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Deskripsi</label>
+        <textarea class="form-textarea" id="linkDesc" placeholder="Deskripsi singkat link ini..."></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Font Awesome Icon Class</label>
+        <input type="text" class="form-input" id="linkIcon" placeholder="fa-brands fa-github" oninput="previewIcon()">
+        <div class="icon-preview">
+          <div class="icon-preview-box"><i id="iconPreviewEl" class="fa-solid fa-link"></i></div>
+          <div class="icon-preview-hint">Cari icon di <a href="https://fontawesome.com/icons" target="_blank" style="color:var(--primary);">fontawesome.com/icons</a></div>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Urutan (sort order)</label>
+          <input type="number" class="form-input" id="linkOrder" value="0" min="0">
+        </div>
+        <div class="form-group" style="display:flex;flex-direction:column;gap:12px;padding-top:24px;">
+          <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:0.85rem;">
+            <button type="button" class="toggle" id="togglePin" onclick="this.classList.toggle('on')"></button>
+            <span>Pin di atas (Featured)</span>
+          </label>
+          <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:0.85rem;">
+            <button type="button" class="toggle on" id="toggleActive" onclick="this.classList.toggle('on')"></button>
+            <span>Aktif (tampil di website)</span>
+          </label>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeLinkModal()">Batal</button>
+      <button class="btn btn-primary" onclick="saveLink()" id="saveLinkBtn">
+        <i class="fa-solid fa-floppy-disk"></i> Simpan Link
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════ MODAL: Add/Edit Category ════════ -->
+<div class="modal-overlay" id="catModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="catModalTitle">Tambah Kategori</div>
+      <button class="modal-close" onclick="closeCatModal()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="catId">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Label *</label>
+          <input type="text" class="form-input" id="catLabel" placeholder="Social Media">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Slug *</label>
+          <input type="text" class="form-input" id="catSlug" placeholder="social">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Icon (Font Awesome)</label>
+          <input type="text" class="form-input" id="catIcon" placeholder="fa-solid fa-tag">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Warna (hex)</label>
+          <input type="color" class="form-input" id="catColor" value="#BFFF00" style="height:42px;padding:4px 8px;">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Urutan</label>
+        <input type="number" class="form-input" id="catOrder" value="0" min="0">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeCatModal()">Batal</button>
+      <button class="btn btn-primary" onclick="saveCategory()">
+        <i class="fa-solid fa-floppy-disk"></i> Simpan Kategori
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════ MODAL: Add/Edit Project ════════ -->
+<div class="modal-overlay" id="projectModal">
+  <div class="modal" style="max-width:600px;">
+    <div class="modal-header">
+      <div class="modal-title" id="projectModalTitle">Tambah Proyek</div>
+      <button class="modal-close" onclick="closeProjectModal()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="projectId">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Nama Proyek *</label>
+          <input type="text" class="form-input" id="projectName" placeholder="HR Portal GAS">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Slug *</label>
+          <input type="text" class="form-input" id="projectSlug" placeholder="hr-portal-gas">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Deskripsi</label>
+        <textarea class="form-textarea" id="projectDesc" placeholder="Deskripsi proyek..."></textarea>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Kategori</label>
+          <select class="form-select" id="projectCat">
+            <option value="Web App">Web App</option>
+            <option value="Automation">Automation</option>
+            <option value="Dashboard">Dashboard</option>
+            <option value="API">API</option>
+            <option value="Tool">Tool</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Status</label>
+          <select class="form-select" id="projectStatus">
+            <option value="Live">Live</option>
+            <option value="Beta">Beta</option>
+            <option value="Development">Development</option>
+            <option value="Archived">Archived</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Teknologi (pisahkan dengan koma)</label>
+        <input type="text" class="form-input" id="projectTech" placeholder="Google Apps Script, Sheets, HTML5">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Demo URL</label>
+          <input type="url" class="form-input" id="projectDemo" placeholder="https://...">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Repo URL</label>
+          <input type="url" class="form-input" id="projectRepo" placeholder="https://github.com/...">
+        </div>
+      </div>
+      <div class="form-group" style="display:flex;align-items:center;gap:12px;">
+        <button type="button" class="toggle" id="toggleFeatured" onclick="this.classList.toggle('on')"></button>
+        <span style="font-size:0.85rem;">Featured (tampil di homepage)</span>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="closeProjectModal()">Batal</button>
+      <button class="btn btn-primary" onclick="saveProject()">
+        <i class="fa-solid fa-floppy-disk"></i> Simpan Proyek
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════ MODAL: Change Password ════════ -->
+<div class="modal-overlay" id="pwdModal">
+  <div class="modal" style="max-width:420px;">
+    <div class="modal-header">
+      <div class="modal-title">Ganti Password</div>
+      <button class="modal-close" onclick="document.getElementById('pwdModal').classList.remove('open')"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Password Lama</label>
+        <input type="password" class="form-input" id="pwdOld">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password Baru</label>
+        <input type="password" class="form-input" id="pwdNew">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Konfirmasi Password Baru</label>
+        <input type="password" class="form-input" id="pwdConfirm">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" onclick="document.getElementById('pwdModal').classList.remove('open')">Batal</button>
+      <button class="btn btn-primary" onclick="changePassword()">
+        <i class="fa-solid fa-key"></i> Ganti Password
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+   JAVASCRIPT
+════════════════════════════════════════ -->
+</div>
+
 </body>
 </html>
