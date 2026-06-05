@@ -1,2047 +1,991 @@
 <!DOCTYPE html>
-<html lang="id" data-theme="dark">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="robots" content="noindex, nofollow">
-<title>Admin Portal — Dede Suparman</title>
-
-<!-- Fonts -->
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&display=swap" rel="stylesheet">
-
-<!-- Font Awesome -->
+<title>Admin Portal — Link Manager</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-
-<!-- Supabase -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
 <style>
-/* ═══════════════════════════════════════════════
-   DESIGN TOKENS
-═══════════════════════════════════════════════ */
-:root {
-  --primary: #BFFF00;
-  --primary-rgb: 191,255,0;
-  --primary-dark: #99cc00;
-  --primary-muted: rgba(191,255,0,0.10);
-  --primary-glow: rgba(191,255,0,0.30);
+:root{
+  --bg:#0a0a0f;--surface:#111118;--card:#16161e;--card2:#1c1c26;
+  --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.12);
+  --accent:#7c4dff;--accent2:#00e5ff;--accent3:#ff4081;
+  --green:#10b981;--red:#ef4444;--amber:#f59e0b;
+  --text:#f0f0f8;--muted:#9090b0;--dim:#555570;
+  --r:14px;--rs:8px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
 
-  --green: #00d68f; --red: #ff4d6d; --blue: #4f9eff; --orange: #ff8c42;
+/* ===== LOGIN SCREEN ===== */
+#loginScreen{
+  position:fixed;inset:0;z-index:9999;
+  background:var(--bg);
+  display:flex;align-items:center;justify-content:center;
+  padding:20px;
+}
+#loginScreen.hidden{display:none}
+.login-card{
+  background:var(--card);
+  border:1px solid var(--border2);
+  border-radius:20px;
+  padding:48px 40px;
+  width:100%;max-width:380px;
+  text-align:center;
+}
+.login-logo{
+  width:72px;height:72px;
+  border-radius:50%;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  display:flex;align-items:center;justify-content:center;
+  margin:0 auto 24px;font-size:28px;
+}
+.login-title{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;margin-bottom:6px}
+.login-sub{color:var(--muted);font-size:13px;margin-bottom:32px}
+.login-field{
+  width:100%;padding:13px 16px;
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--rs);
+  color:var(--text);font-size:14px;
+  font-family:'DM Sans',sans-serif;
+  transition:.2s;margin-bottom:12px;
+}
+.login-field:focus{outline:none;border-color:var(--accent)}
+.login-btn{
+  width:100%;padding:13px;
+  background:var(--accent);
+  border:none;border-radius:var(--rs);
+  color:#fff;font-size:14px;font-weight:600;
+  font-family:'DM Sans',sans-serif;
+  cursor:pointer;transition:.2s;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+}
+.login-btn:hover{background:#6c3dff}
+.login-err{
+  color:var(--red);font-size:12px;margin-top:8px;
+  display:none;
+}
+.login-err.show{display:block}
+.login-hint{color:var(--dim);font-size:11px;margin-top:16px}
 
-  --sidebar-w: 240px;
-  --topbar-h: 60px;
+/* ===== ADMIN LAYOUT ===== */
+#adminApp{display:none}
+#adminApp.show{display:flex;min-height:100vh}
 
-  --ease: cubic-bezier(0.23, 1, 0.32, 1);
-  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
-
-  --r-sm: 6px; --r-md: 10px; --r-lg: 14px; --r-xl: 20px; --r-full: 9999px;
-}
-
-[data-theme="dark"] {
-  --bg:      #090c0a;
-  --bg-2:    #111510;
-  --bg-3:    #161b14;
-  --surface: #1a201a;
-  --surface-2:#212821;
-  --border:  rgba(255,255,255,0.06);
-  --border-strong: rgba(255,255,255,0.12);
-  --text-1:  #eef2ea;
-  --text-2:  #8fa08a;
-  --text-3:  #5a6655;
-  --text-inv:#090c0a;
-  --shadow:  0 8px 32px rgba(0,0,0,0.5);
-}
-[data-theme="light"] {
-  --bg:      #f5f7f2;
-  --bg-2:    #ffffff;
-  --bg-3:    #eef1eb;
-  --surface: #ffffff;
-  --surface-2:#f0f3ed;
-  --border:  rgba(0,0,0,0.07);
-  --border-strong: rgba(0,0,0,0.14);
-  --text-1:  #0d1117;
-  --text-2:  #4a5568;
-  --text-3:  #8a96a3;
-  --text-inv:#0d1117;
-  --shadow:  0 8px 32px rgba(0,0,0,0.10);
-}
-
-/* ═══════════════════════════════════════════════
-   RESET & BASE
-═══════════════════════════════════════════════ */
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { font-size: 16px; }
-body {
-  font-family: 'DM Sans', sans-serif;
-  background: var(--bg);
-  color: var(--text-1);
-  line-height: 1.5;
-  overflow: hidden;
-  height: 100vh;
-}
-a { color: inherit; text-decoration: none; }
-button { cursor: pointer; border: none; background: none; font-family: inherit; color: inherit; }
-::-webkit-scrollbar { width: 5px; height: 5px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: rgba(var(--primary-rgb),0.25); border-radius: 3px; }
-:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; border-radius: 4px; }
-
-/* ═══════════════════════════════════════════════
-   LAYOUT
-═══════════════════════════════════════════════ */
-#app { display: flex; height: 100vh; }
-
-/* ─── LOGIN SCREEN ─── */
-#login-screen {
-  position: fixed; inset: 0; z-index: 9999;
-  background: var(--bg);
-  display: flex; align-items: center; justify-content: center;
-  transition: opacity 0.4s var(--ease);
-}
-#login-screen.hidden { opacity: 0; pointer-events: none; }
-
-.login-bg {
-  position: absolute; inset: 0; overflow: hidden; pointer-events: none;
-}
-.login-blob {
-  position: absolute; border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
-  opacity: 0.06; animation: blob 10s ease-in-out infinite;
-}
-.login-blob:nth-child(1) {
-  width: 700px; height: 700px; background: var(--primary);
-  top: -200px; right: -200px;
-}
-.login-blob:nth-child(2) {
-  width: 500px; height: 500px; background: var(--green);
-  bottom: -150px; left: -150px; animation-delay: -5s; opacity: 0.04;
-}
-@keyframes blob {
-  0%,100% { border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; }
-  50% { border-radius: 30% 60% 70% 40% / 50% 60% 30% 60%; }
-}
-
-.login-card {
-  width: 100%; max-width: 400px;
-  background: var(--surface);
-  border: 1px solid var(--border-strong);
-  border-radius: var(--r-xl);
-  padding: 40px;
-  box-shadow: var(--shadow), 0 0 0 1px rgba(var(--primary-rgb),0.07);
-  position: relative; z-index: 1;
-  animation: scaleIn 0.5s var(--ease-spring) both;
-}
-@keyframes scaleIn { from { opacity:0; transform:scale(0.92) translateY(16px); } to { opacity:1; transform:none; } }
-
-.login-logo {
-  display: flex; align-items: center; gap: 14px;
-  margin-bottom: 32px;
-}
-.login-logo-mark {
-  width: 44px; height: 44px; border-radius: 12px;
-  background: var(--primary);
-  display: flex; align-items: center; justify-content: center;
-  font-family: 'Syne', sans-serif; font-size: 1rem; font-weight: 800;
-  color: var(--text-inv);
-  box-shadow: 0 4px 16px var(--primary-glow);
-}
-.login-logo-text {
-  font-family: 'Syne', sans-serif; font-size: 1rem; font-weight: 700;
-  color: var(--text-1);
-}
-.login-logo-text span {
-  display: block; font-family: 'DM Sans', sans-serif;
-  font-size: 0.72rem; font-weight: 400; color: var(--text-3);
-  margin-top: 1px;
-}
-
-.login-title {
-  font-family: 'Syne', sans-serif;
-  font-size: 1.6rem; font-weight: 800;
-  color: var(--text-1); margin-bottom: 6px;
-}
-.login-subtitle {
-  font-size: 0.875rem; color: var(--text-3);
-  margin-bottom: 28px;
-}
-
-.login-error {
-  display: none;
-  background: rgba(255,77,109,0.10);
-  border: 1px solid rgba(255,77,109,0.25);
-  border-radius: var(--r-md);
-  padding: 10px 14px;
-  font-size: 0.83rem; color: var(--red);
-  margin-bottom: 18px;
-  align-items: center; gap: 8px;
-}
-
-.form-group { margin-bottom: 16px; }
-.form-label {
-  display: block; font-size: 0.75rem; font-weight: 600;
-  color: var(--text-2); margin-bottom: 7px;
-  text-transform: uppercase; letter-spacing: 0.06em;
-}
-.form-input, .form-select, .form-textarea {
-  width: 100%; padding: 11px 14px;
-  background: var(--bg-2);
-  border: 1.5px solid var(--border-strong);
-  border-radius: var(--r-md);
-  color: var(--text-1); font-size: 0.875rem;
-  font-family: 'DM Sans', sans-serif;
-  outline: none; transition: border-color 0.2s, box-shadow 0.2s;
-}
-.form-input:focus, .form-select:focus, .form-textarea:focus {
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(var(--primary-rgb),0.12);
-}
-.form-textarea { resize: vertical; min-height: 90px; }
-.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-
-.input-wrap { position: relative; }
-.input-eye {
-  position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
-  color: var(--text-3); font-size: 0.85rem; transition: color 0.18s;
-}
-.input-eye:hover { color: var(--text-1); }
-
-.btn-login {
-  width: 100%; padding: 13px;
-  background: var(--primary); color: var(--text-inv);
-  border-radius: var(--r-full);
-  font-family: 'DM Sans', sans-serif; font-size: 0.9rem; font-weight: 700;
-  display: flex; align-items: center; justify-content: center; gap: 8px;
-  transition: all 0.25s var(--ease);
-  box-shadow: 0 4px 20px var(--primary-glow);
-  margin-top: 8px;
-}
-.btn-login:hover { transform: translateY(-2px); box-shadow: 0 8px 32px var(--primary-glow); }
-.btn-login:disabled { opacity: 0.6; pointer-events: none; }
-
-.login-hint {
-  text-align: center; font-size: 0.75rem; color: var(--text-3);
-  margin-top: 18px; display: flex; align-items: center; justify-content: center; gap: 6px;
-}
-
-/* ─── SIDEBAR ─── */
-.sidebar {
-  width: var(--sidebar-w);
-  height: 100vh;
-  background: var(--bg-2);
-  border-right: 1px solid var(--border);
-  display: flex; flex-direction: column;
-  flex-shrink: 0;
-  transition: transform 0.3s var(--ease);
-  overflow-y: auto;
-  overflow-x: hidden;
-}
-
-.sidebar-header {
-  padding: 20px 16px 12px;
-  border-bottom: 1px solid var(--border);
-  flex-shrink: 0;
-}
-.sidebar-logo {
-  display: flex; align-items: center; gap: 12px;
-}
-.sidebar-logo-mark {
-  width: 36px; height: 36px; border-radius: 10px;
-  background: var(--primary);
-  display: flex; align-items: center; justify-content: center;
-  font-family: 'Syne', sans-serif; font-size: 0.85rem; font-weight: 800;
-  color: var(--text-inv); flex-shrink: 0;
-}
-.sidebar-logo-text {
-  font-family: 'Syne', sans-serif; font-size: 0.875rem; font-weight: 700;
-  color: var(--text-1);
-}
-.sidebar-badge {
-  font-size: 0.6rem; font-weight: 600;
-  background: var(--primary-muted); color: var(--primary);
-  border: 1px solid rgba(var(--primary-rgb),0.2);
-  padding: 2px 8px; border-radius: var(--r-full);
-  display: block; margin-top: 2px; letter-spacing: 0.06em;
-}
-
-.sidebar-nav { flex: 1; padding: 12px; }
-.nav-section-title {
-  font-size: 0.62rem; font-weight: 700; text-transform: uppercase;
-  letter-spacing: 0.14em; color: var(--text-3);
-  padding: 8px 10px 5px;
-}
-.nav-item {
-  display: flex; align-items: center; gap: 10px;
-  padding: 10px 12px; border-radius: var(--r-md);
-  font-size: 0.875rem; font-weight: 500; color: var(--text-2);
-  cursor: pointer; transition: all 0.18s; margin-bottom: 1px;
-  user-select: none;
-}
-.nav-item i { width: 16px; text-align: center; font-size: 0.85rem; flex-shrink: 0; }
-.nav-item:hover { background: var(--bg-3); color: var(--text-1); }
-.nav-item.active { background: var(--primary-muted); color: var(--primary); font-weight: 600; }
-.nav-item .badge-count {
-  margin-left: auto; font-size: 0.68rem; font-weight: 700;
-  background: var(--primary); color: var(--text-inv);
-  padding: 2px 7px; border-radius: var(--r-full); flex-shrink: 0;
-}
-
-.sidebar-footer {
-  padding: 12px; border-top: 1px solid var(--border); flex-shrink: 0;
-}
-.admin-profile {
-  display: flex; align-items: center; gap: 10px;
-  padding: 10px 12px; border-radius: var(--r-md); background: var(--bg-3);
-}
-.admin-avatar {
-  width: 34px; height: 34px; border-radius: 50%;
-  background: var(--primary);
-  display: flex; align-items: center; justify-content: center;
-  font-family: 'Syne', sans-serif; font-size: 0.8rem; font-weight: 800;
-  color: var(--text-inv); flex-shrink: 0;
-}
-.admin-info { flex: 1; min-width: 0; }
-.admin-name { font-size: 0.82rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.admin-role { font-size: 0.7rem; color: var(--text-3); }
-.btn-logout {
-  width: 28px; height: 28px; border-radius: 6px;
-  display: flex; align-items: center; justify-content: center;
-  color: var(--text-3); font-size: 0.8rem; transition: all 0.18s; flex-shrink: 0;
-}
-.btn-logout:hover { background: rgba(255,77,109,0.15); color: var(--red); }
-
-/* ─── MAIN CONTENT ─── */
-.main-content {
-  flex: 1; min-width: 0;
-  display: flex; flex-direction: column;
-  height: 100vh; overflow: hidden;
-}
-
-.topbar {
-  height: var(--topbar-h);
-  background: var(--bg-2);
-  border-bottom: 1px solid var(--border);
-  padding: 0 24px;
-  display: flex; align-items: center; justify-content: space-between;
-  flex-shrink: 0;
-}
-.topbar-left { display: flex; align-items: center; gap: 14px; }
-.topbar-title { font-family: 'Syne', sans-serif; font-size: 1rem; font-weight: 700; }
-.topbar-breadcrumb { font-size: 0.78rem; color: var(--text-3); }
-.topbar-right { display: flex; align-items: center; gap: 10px; }
-
-.topbar-btn {
-  width: 36px; height: 36px; border-radius: var(--r-md);
-  border: 1.5px solid var(--border-strong);
-  background: var(--bg-2);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 0.85rem; color: var(--text-2); transition: all 0.18s;
-}
-.topbar-btn:hover { border-color: var(--primary); color: var(--primary); }
-
-.conn-status {
-  display: flex; align-items: center; gap: 7px;
-  font-size: 0.75rem; color: var(--text-3);
-  padding: 5px 12px; border-radius: var(--r-full);
-  border: 1px solid var(--border); background: var(--bg-3);
-}
-.conn-dot {
-  width: 7px; height: 7px; border-radius: 50%;
-  background: var(--text-3); transition: background 0.3s;
-}
-.conn-dot.connected { background: var(--green); box-shadow: 0 0 0 3px rgba(0,214,143,0.2); }
-.conn-dot.error     { background: var(--red); }
-
-.page-content {
-  flex: 1; overflow-y: auto; padding: 24px;
-}
-
-/* ─── PAGES ─── */
-.page { display: none; animation: fadeIn 0.25s var(--ease); }
-.page.active { display: block; }
-@keyframes fadeIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:none; } }
-
-/* ─── STATS ROW ─── */
-.stats-row {
-  display: grid; grid-template-columns: repeat(4,1fr); gap: 14px;
-  margin-bottom: 24px;
-}
-.stat-card {
-  background: var(--surface); border: 1px solid var(--border);
-  border-radius: var(--r-lg); padding: 20px;
-  display: flex; align-items: flex-start; justify-content: space-between;
-  gap: 12px; transition: border-color 0.2s;
-}
-.stat-card:hover { border-color: rgba(var(--primary-rgb),0.3); }
-.stat-card-icon {
-  width: 42px; height: 42px; border-radius: var(--r-md);
-  display: flex; align-items: center; justify-content: center; font-size: 1rem;
-  flex-shrink: 0;
-}
-.icon-green  { background: rgba(0,214,143,0.12);  color: var(--green);  }
-.icon-blue   { background: rgba(79,158,255,0.12);  color: var(--blue);   }
-.icon-orange { background: rgba(255,140,66,0.12);  color: var(--orange); }
-.icon-primary{ background: var(--primary-muted);   color: var(--primary);}
-.stat-num { font-family:'Syne',sans-serif; font-size:1.8rem; font-weight:800; line-height:1; }
-.stat-label { font-size:0.75rem; color:var(--text-2); margin-top:4px; }
-
-/* ─── CARD ─── */
-.card {
-  background: var(--surface); border: 1px solid var(--border);
-  border-radius: var(--r-lg); overflow: hidden;
-}
-.card + .card { margin-top: 16px; }
-.card-header {
-  padding: 16px 20px; border-bottom: 1px solid var(--border);
-  display: flex; align-items: center; justify-content: space-between;
-  gap: 12px; flex-wrap: wrap;
-}
-.card-title {
-  font-family:'Syne',sans-serif; font-size:0.9rem; font-weight:700;
-  display: flex; align-items: center; gap: 8px;
-}
-.card-title i { color: var(--primary); }
-.card-actions { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
-.card-body { padding: 0; }
-
-/* ─── BUTTONS ─── */
-.btn {
-  display: inline-flex; align-items: center; gap: 7px;
-  padding: 9px 18px; border-radius: var(--r-full);
-  font-family: 'DM Sans', sans-serif; font-size: 0.83rem; font-weight: 600;
-  transition: all 0.2s var(--ease); cursor: pointer; white-space: nowrap;
-}
-.btn-primary  { background: var(--primary); color: var(--text-inv); }
-.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 20px var(--primary-glow); }
-.btn-outline  { border: 1.5px solid var(--border-strong); color: var(--text-2); }
-.btn-outline:hover { border-color: var(--primary); color: var(--primary); }
-.btn-ghost    { color: var(--text-2); }
-.btn-ghost:hover { color: var(--primary); background: var(--primary-muted); }
-.btn-danger   { background: rgba(255,77,109,0.12); color: var(--red); border: 1px solid rgba(255,77,109,0.25); }
-.btn-danger:hover { background: rgba(255,77,109,0.2); }
-.btn-sm  { padding: 6px 13px; font-size: 0.78rem; }
-.btn-icon{ padding: 7px; border-radius: var(--r-md); }
-
-/* ─── SEARCH ─── */
-.search-wrap { position:relative; display:flex; align-items:center; }
-.search-wrap i { position:absolute; left:12px; color:var(--text-3); font-size:0.8rem; pointer-events:none; }
-.search-input {
-  padding: 8px 14px 8px 34px;
-  background: var(--bg-3); border: 1.5px solid var(--border-strong);
-  border-radius: var(--r-full); color: var(--text-1);
-  font-family:'DM Sans',sans-serif; font-size:0.83rem;
-  outline:none; width:210px; transition: border-color 0.2s;
-}
-.search-input:focus { border-color: var(--primary); }
-
-/* ─── TABLE ─── */
-.data-table { width:100%; border-collapse:collapse; }
-.data-table th {
-  font-size:0.7rem; font-weight:700; text-transform:uppercase;
-  letter-spacing:0.08em; color:var(--text-3);
-  padding:11px 16px; text-align:left; border-bottom:1px solid var(--border);
-  white-space:nowrap; background:var(--bg-2);
-}
-.data-table td {
-  padding:13px 16px; font-size:0.85rem;
-  border-bottom:1px solid var(--border); vertical-align:middle;
-}
-.data-table tr:last-child td { border-bottom:none; }
-.data-table tbody tr:hover td { background:var(--bg-3); }
-.td-icon {
-  width:34px; height:34px; border-radius:var(--r-md);
-  background:var(--primary-muted); display:flex; align-items:center;
-  justify-content:center; font-size:0.85rem; color:var(--primary); flex-shrink:0;
-}
-.empty-state {
-  text-align:center; padding:56px 20px; color:var(--text-3);
-}
-.empty-state i   { font-size:2.2rem; margin-bottom:12px; display:block; }
-.empty-state h3  { font-size:0.95rem; font-weight:600; color:var(--text-2); margin-bottom:6px; }
-.empty-state p   { font-size:0.82rem; }
-.drag-handle { color:var(--text-3); cursor:grab; font-size:0.8rem; padding:4px; }
-
-/* ─── BADGES ─── */
-.badge {
-  display:inline-flex; align-items:center; gap:4px;
-  padding:3px 10px; border-radius:var(--r-full);
-  font-size:0.7rem; font-weight:600; white-space:nowrap;
-}
-.badge-primary{ background:var(--primary-muted); color:var(--primary); border:1px solid rgba(var(--primary-rgb),0.2); }
-.badge-green  { background:rgba(0,214,143,0.12);  color:var(--green);  border:1px solid rgba(0,214,143,0.2);  }
-.badge-red    { background:rgba(255,77,109,0.12);  color:var(--red);    border:1px solid rgba(255,77,109,0.2);  }
-.badge-blue   { background:rgba(79,158,255,0.12);  color:var(--blue);   border:1px solid rgba(79,158,255,0.2);  }
-.badge-orange { background:rgba(255,140,66,0.12);  color:var(--orange); border:1px solid rgba(255,140,66,0.2);  }
-.badge-muted  { background:var(--bg-3); color:var(--text-3); border:1px solid var(--border); }
-.badge-count  { margin-left:auto; font-size:0.68rem; font-weight:700; background:var(--primary); color:var(--text-inv); padding:2px 7px; border-radius:var(--r-full); }
-
-/* ─── TOGGLE ─── */
-.toggle {
-  width:38px; height:22px; border-radius:var(--r-full);
-  background:var(--bg-3); border:none; cursor:pointer;
-  position:relative; transition:background 0.2s; flex-shrink:0;
-}
-.toggle::after {
-  content:''; position:absolute; width:16px; height:16px;
-  border-radius:50%; background:var(--text-3);
-  top:3px; left:3px; transition:all 0.2s var(--ease);
-}
-.toggle.on { background:var(--primary); }
-.toggle.on::after { background:var(--text-inv); transform:translateX(16px); }
-
-/* ─── MODAL ─── */
-.modal-overlay {
-  position:fixed; inset:0; background:rgba(0,0,0,0.75);
-  backdrop-filter:blur(8px); z-index:1000;
-  display:flex; align-items:center; justify-content:center; padding:20px;
-  opacity:0; pointer-events:none; transition:opacity 0.25s;
-}
-.modal-overlay.open { opacity:1; pointer-events:auto; }
-.modal {
-  background:var(--surface); border:1px solid var(--border-strong);
-  border-radius:var(--r-xl); width:100%; max-width:520px;
-  max-height:90vh; overflow-y:auto;
-  transform:scale(0.94) translateY(12px);
-  transition:transform 0.25s var(--ease);
-  box-shadow:0 32px 80px rgba(0,0,0,0.6);
-}
-.modal-overlay.open .modal { transform:scale(1) translateY(0); }
-.modal-header {
-  padding:22px 24px 16px; border-bottom:1px solid var(--border);
-  display:flex; align-items:center; justify-content:space-between; gap:12px;
-  position:sticky; top:0; background:var(--surface); z-index:1;
-}
-.modal-title { font-family:'Syne',sans-serif; font-size:1rem; font-weight:700; }
-.modal-close {
-  width:30px; height:30px; border-radius:var(--r-md);
-  display:flex; align-items:center; justify-content:center;
-  font-size:0.85rem; color:var(--text-2); transition:all 0.18s;
-}
-.modal-close:hover { background:var(--bg-3); color:var(--text-1); }
-.modal-body  { padding:22px 24px; }
-.modal-footer{
-  padding:16px 24px; border-top:1px solid var(--border);
-  display:flex; align-items:center; justify-content:flex-end; gap:10px;
-  position:sticky; bottom:0; background:var(--surface);
-}
-.modal .form-group { margin-bottom:16px; }
-.modal .form-label {
-  display:block; font-size:0.72rem; font-weight:600; color:var(--text-2);
-  margin-bottom:7px; text-transform:uppercase; letter-spacing:0.05em;
-}
-.icon-preview { display:flex; align-items:center; gap:12px; margin-top:8px; }
-.icon-preview-box {
-  width:38px; height:38px; border-radius:var(--r-md);
-  background:var(--primary-muted); display:flex; align-items:center;
-  justify-content:center; font-size:1.1rem; color:var(--primary);
-}
-.icon-preview-hint { font-size:0.75rem; color:var(--text-3); }
-
-/* ─── SETTINGS ─── */
-.settings-section {
-  background:var(--surface); border:1px solid var(--border);
-  border-radius:var(--r-lg); overflow:hidden; margin-bottom:16px;
-}
-.settings-section-header {
-  padding:16px 20px; border-bottom:1px solid var(--border);
-  display:flex; align-items:center; gap:10px;
-  font-family:'Syne',sans-serif; font-size:0.9rem; font-weight:700;
-}
-.settings-section-header i { color:var(--primary); }
-.settings-row {
-  padding:16px 20px; display:flex; align-items:center;
-  justify-content:space-between; gap:20px; border-bottom:1px solid var(--border);
-}
-.settings-row:last-child { border-bottom:none; }
-.settings-row-info p { font-size:0.875rem; font-weight:500; color:var(--text-1); margin-bottom:2px; }
-.settings-row-info span { font-size:0.78rem; color:var(--text-3); }
-
-.config-banner {
-  background:var(--bg-3); border:1px solid var(--border);
-  border-left:3px solid var(--primary);
-  border-radius:var(--r-md); padding:14px 18px;
-  display:flex; align-items:flex-start; gap:12px;
-  font-size:0.83rem; color:var(--text-2); line-height:1.6;
+/* Sidebar */
+.sidebar{
+  width:240px;flex-shrink:0;
+  background:var(--surface);
+  border-right:1px solid var(--border);
+  padding:24px 0;
+  display:flex;flex-direction:column;
+  position:sticky;top:0;height:100vh;
+}
+.sb-logo{
+  padding:0 20px 24px;
+  border-bottom:1px solid var(--border);
   margin-bottom:16px;
 }
-.config-banner i { color:var(--primary); margin-top:1px; flex-shrink:0; }
-.config-banner a { color:var(--primary); text-decoration:underline; }
-.config-banner code {
-  background:var(--bg-2); padding:2px 6px; border-radius:4px;
-  font-size:0.78rem; font-family:monospace;
+.sb-logo-text{font-family:'Syne',sans-serif;font-size:16px;font-weight:800;color:var(--text)}
+.sb-logo-sub{font-size:11px;color:var(--muted);margin-top:2px}
+.sb-nav{flex:1;padding:0 8px}
+.sb-item{
+  display:flex;align-items:center;gap:12px;
+  padding:11px 14px;border-radius:var(--rs);
+  cursor:pointer;transition:.2s;
+  font-size:13px;font-weight:500;color:var(--muted);
+  margin-bottom:2px;
+}
+.sb-item i{font-size:14px;width:18px;text-align:center}
+.sb-item:hover{background:rgba(255,255,255,0.04);color:var(--text)}
+.sb-item.active{background:rgba(124,77,255,0.15);color:var(--accent)}
+.sb-divider{height:1px;background:var(--border);margin:12px 8px}
+.sb-bottom{padding:0 8px}
+.sb-logout{
+  display:flex;align-items:center;gap:12px;
+  padding:11px 14px;border-radius:var(--rs);
+  cursor:pointer;transition:.2s;
+  font-size:13px;font-weight:500;color:var(--dim);
+  width:100%;background:none;border:none;font-family:'DM Sans',sans-serif;
+}
+.sb-logout:hover{color:var(--red)}
+
+/* Main content */
+.main{flex:1;padding:32px;overflow-y:auto;min-width:0}
+
+/* ===== PAGES ===== */
+.page{display:none}
+.page.active{display:block}
+.page-title{
+  font-family:'Syne',sans-serif;
+  font-size:24px;font-weight:800;
+  margin-bottom:28px;
+  display:flex;align-items:center;gap:12px;
+}
+.page-title i{font-size:20px;color:var(--accent)}
+
+/* Stats */
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-bottom:32px}
+.stat-card{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:var(--r);
+  padding:20px;
+}
+.stat-val{font-family:'Syne',sans-serif;font-size:32px;font-weight:800;color:var(--text)}
+.stat-key{font-size:12px;color:var(--muted);margin-top:4px;letter-spacing:.5px}
+.stat-icon{font-size:18px;margin-bottom:8px}
+
+/* Controls */
+.controls-row{display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap}
+.search-box{flex:1;min-width:200px;position:relative}
+.search-box i{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--dim);font-size:13px}
+.search-inp{
+  width:100%;padding:11px 14px 11px 38px;
+  background:var(--card);border:1px solid var(--border);
+  border-radius:var(--rs);color:var(--text);font-size:13px;
+  font-family:'DM Sans',sans-serif;transition:.2s;
+}
+.search-inp:focus{outline:none;border-color:var(--accent)}
+.search-inp::placeholder{color:var(--dim)}
+.btn{
+  padding:11px 20px;border:none;border-radius:var(--rs);
+  font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;
+  cursor:pointer;transition:.2s;display:flex;align-items:center;gap:7px;white-space:nowrap;
+}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-primary:hover{background:#6c3dff}
+.btn-secondary{background:var(--card);border:1px solid var(--border);color:var(--muted)}
+.btn-secondary:hover{border-color:var(--accent);color:var(--accent)}
+.btn-danger{background:rgba(239,68,68,0.15);color:var(--red);border:1px solid rgba(239,68,68,0.2)}
+.btn-danger:hover{background:rgba(239,68,68,0.25)}
+.btn-sm{padding:7px 14px;font-size:12px}
+.btn-xs{padding:5px 10px;font-size:11px}
+
+/* Table */
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+th{
+  text-align:left;padding:10px 14px;
+  font-size:11px;font-weight:600;
+  letter-spacing:1px;text-transform:uppercase;
+  color:var(--dim);border-bottom:1px solid var(--border);
+}
+td{padding:12px 14px;border-bottom:1px solid rgba(255,255,255,0.04);vertical-align:middle}
+tr:hover td{background:rgba(255,255,255,0.02)}
+.td-icon{
+  width:36px;height:36px;border-radius:var(--rs);
+  display:flex;align-items:center;justify-content:center;font-size:16px;
+  border:1px solid rgba(255,255,255,0.07);
+}
+.td-title{font-size:13px;font-weight:500}
+.td-url{font-size:11px;color:var(--dim);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.td-cat{
+  display:inline-flex;align-items:center;gap:5px;
+  font-size:11px;padding:3px 10px;border-radius:50px;
+  border:1px solid rgba(255,255,255,0.08);
+  background:rgba(255,255,255,0.04);color:var(--muted);
+}
+.td-tags{display:flex;gap:4px;flex-wrap:wrap}
+.tag-sm{
+  font-size:10px;padding:2px 7px;border-radius:50px;
+  background:rgba(124,77,255,0.1);color:rgba(124,77,255,0.85);
+}
+.action-btns{display:flex;gap:6px}
+.icon-btn{
+  width:30px;height:30px;border:1px solid var(--border);
+  border-radius:6px;background:none;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;color:var(--dim);transition:.2s;
+}
+.icon-btn:hover.edit{border-color:var(--accent);color:var(--accent)}
+.icon-btn:hover.del{border-color:var(--red);color:var(--red)}
+
+/* Empty table */
+.empty-tbl{text-align:center;padding:60px;color:var(--muted)}
+.empty-tbl i{font-size:40px;display:block;margin-bottom:12px;color:var(--dim)}
+
+/* ===== MODAL ===== */
+.overlay{
+  position:fixed;inset:0;z-index:5000;
+  background:rgba(0,0,0,0.75);
+  backdrop-filter:blur(6px);
+  display:none;align-items:center;justify-content:center;
+  padding:20px;
+}
+.overlay.show{display:flex}
+.modal{
+  background:var(--surface);
+  border:1px solid var(--border2);
+  border-radius:20px;
+  width:100%;max-width:560px;
+  max-height:90vh;
+  overflow-y:auto;
+  animation:mIn .25s ease;
+}
+@keyframes mIn{from{opacity:0;transform:scale(.96) translateY(8px)}to{opacity:1;transform:none}}
+.modal-head{
+  padding:24px 24px 0;
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:24px;
+}
+.modal-head h2{font-family:'Syne',sans-serif;font-size:18px;font-weight:700}
+.close-btn{
+  width:32px;height:32px;border:1px solid var(--border);
+  border-radius:var(--rs);background:none;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  font-size:13px;color:var(--muted);transition:.2s;
+}
+.close-btn:hover{border-color:var(--red);color:var(--red)}
+.modal-body{padding:0 24px 24px}
+.form-row{margin-bottom:16px}
+.form-row label{display:block;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:7px;letter-spacing:.3px}
+.inp,.sel,.textarea{
+  width:100%;padding:11px 14px;
+  background:rgba(255,255,255,0.04);
+  border:1px solid var(--border);
+  border-radius:var(--rs);
+  color:var(--text);font-size:13px;
+  font-family:'DM Sans',sans-serif;
+  transition:.2s;
+}
+.inp:focus,.sel:focus,.textarea:focus{outline:none;border-color:var(--accent)}
+.inp::placeholder{color:var(--dim)}
+.sel{cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23555570' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center}
+.sel option{background:var(--surface)}
+.textarea{resize:vertical;min-height:70px}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+
+/* Icon picker */
+.icon-preview{
+  display:flex;align-items:center;gap:12px;margin-bottom:10px;
+}
+.icon-preview-box{
+  width:52px;height:52px;border-radius:10px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:22px;border:1px solid var(--border2);
+  cursor:pointer;transition:.2s;position:relative;
+}
+.icon-preview-box:hover{border-color:var(--accent)}
+.icon-preview-label{font-size:12px;color:var(--muted)}
+.color-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.color-dot{
+  width:26px;height:26px;border-radius:50%;
+  cursor:pointer;border:2px solid transparent;transition:.15s;
+}
+.color-dot:hover{transform:scale(1.1)}
+.color-dot.selected{border-color:var(--text);transform:scale(1.12)}
+
+/* Icon Picker Panel */
+.icon-panel{
+  background:var(--card2);
+  border:1px solid var(--border2);
+  border-radius:var(--r);
+  padding:14px;
+  margin-top:8px;
+  display:none;
+}
+.icon-panel.show{display:block}
+.icon-panel-search{margin-bottom:12px;position:relative}
+.icon-panel-search i{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--dim);font-size:12px}
+.icon-panel-search input{
+  width:100%;padding:9px 12px 9px 32px;
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--rs);color:var(--text);font-size:12px;
+  font-family:'DM Sans',sans-serif;
+}
+.icon-panel-search input:focus{outline:none;border-color:var(--accent)}
+.icon-categories{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.icon-cat-btn{
+  padding:4px 12px;border-radius:50px;
+  border:1px solid var(--border);background:none;
+  color:var(--muted);font-size:11px;cursor:pointer;
+  font-family:'DM Sans',sans-serif;transition:.15s;
+}
+.icon-cat-btn:hover{border-color:var(--accent);color:var(--accent)}
+.icon-cat-btn.active{background:var(--accent);border-color:var(--accent);color:#fff}
+.icon-grid{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(40px,1fr));gap:6px;
+  max-height:220px;overflow-y:auto;
+}
+.icon-item{
+  width:40px;height:40px;border-radius:6px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:16px;cursor:pointer;
+  border:1px solid transparent;
+  transition:.15s;color:var(--muted);
+}
+.icon-item:hover{background:rgba(124,77,255,0.15);border-color:var(--accent);color:var(--accent)}
+.icon-item.selected{background:var(--accent);color:#fff;border-color:var(--accent)}
+.icon-grid::-webkit-scrollbar{width:4px}
+.icon-grid::-webkit-scrollbar-track{background:transparent}
+.icon-grid::-webkit-scrollbar-thumb{background:var(--dim);border-radius:2px}
+
+/* Modal footer */
+.modal-foot{
+  padding:0 24px 24px;
+  display:flex;gap:10px;justify-content:flex-end;
+  border-top:1px solid var(--border);padding-top:16px;
 }
 
-/* ─── TOAST ─── */
-#toast-container {
-  position:fixed; bottom:24px; right:24px;
-  display:flex; flex-direction:column; gap:8px; z-index:9999;
-  pointer-events:none;
+/* Profile page */
+.profile-form{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:var(--r);padding:28px;max-width:480px;
 }
-.toast {
-  display:flex; align-items:center; gap:10px;
-  padding:12px 16px; border-radius:var(--r-md);
-  font-size:0.83rem; font-weight:500;
-  background:var(--surface); border:1px solid var(--border-strong);
-  box-shadow:var(--shadow);
-  animation:slideUp 0.3s var(--ease-spring) both, fadeOut 0.4s ease 3.6s both;
-  pointer-events:auto;
-}
-.toast.success { border-left:3px solid var(--green); }
-.toast.error   { border-left:3px solid var(--red);   }
-.toast.info    { border-left:3px solid var(--blue);   }
-.toast.success i { color:var(--green); }
-.toast.error   i { color:var(--red); }
-.toast.info    i { color:var(--blue); }
-@keyframes slideUp  { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:none; } }
-@keyframes fadeOut  { from { opacity:1; } to { opacity:0; } }
+.profile-form h3{font-family:'Syne',sans-serif;font-size:16px;font-weight:700;margin-bottom:20px;color:var(--muted);text-transform:uppercase;letter-spacing:1px}
 
-/* ─── SPINNER ─── */
-.spinner {
-  width:20px; height:20px; border-radius:50%;
-  border:2px solid rgba(var(--primary-rgb),0.2);
-  border-top-color:var(--primary);
-  animation:spin 0.7s linear infinite;
+/* Password page */
+.pass-form{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:var(--r);padding:28px;max-width:380px;
 }
-@keyframes spin { to { transform:rotate(360deg); } }
+.pass-form h3{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;margin-bottom:20px;color:var(--muted);text-transform:uppercase;letter-spacing:1px}
+.pass-msg{font-size:12px;margin-top:8px;display:none}
+.pass-msg.ok{color:var(--green);display:block}
+.pass-msg.err{color:var(--red);display:block}
 
-/* ─── DASHBOARD RECENT TABLE ─── */
-.dash-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:16px; }
-.recent-header { display:flex; justify-content:space-between; align-items:center; padding:16px 20px 0; }
-.recent-title { font-family:'Syne',sans-serif; font-size:0.875rem; font-weight:700; }
+/* Toast */
+.toasts{position:fixed;bottom:24px;right:24px;z-index:9998;display:flex;flex-direction:column;gap:8px}
+.toast{
+  padding:12px 18px;background:var(--card2);
+  border:1px solid var(--border2);border-radius:var(--rs);
+  font-size:13px;display:flex;align-items:center;gap:9px;
+  box-shadow:0 8px 24px rgba(0,0,0,0.3);
+  animation:tIn .3s ease,tOut .3s ease 2.7s forwards;
+}
+@keyframes tIn{from{opacity:0;transform:translateX(60px)}to{opacity:1;transform:none}}
+@keyframes tOut{from{opacity:1}to{opacity:0;transform:translateX(60px)}}
+.toast.ok i{color:var(--green)}
+.toast.err i{color:var(--red)}
 
-/* ─── MOBILE (sidebar overlay) ─── */
-.sidebar-overlay {
-  display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5);
-  z-index:199; backdrop-filter:blur(4px);
-}
-@media (max-width: 900px) {
-  .sidebar { position:fixed; left:0; top:0; z-index:200; transform:translateX(-100%); }
-  .sidebar.open { transform:translateX(0); }
-  .sidebar-overlay.visible { display:block; }
-  .main-content { margin-left:0; }
-  .stats-row { grid-template-columns:repeat(2,1fr); }
-  .dash-grid { grid-template-columns:1fr; }
-  .form-row  { grid-template-columns:1fr; }
-}
-@media (max-width: 560px) {
-  .stats-row { grid-template-columns:1fr; }
-}
+/* Sort highlight */
+.sort-arrow{font-size:10px;margin-left:4px;color:var(--dim)}
 
-/* ─── LINK HUB PUBLIC PREVIEW (modal) ─── */
-.linkhub-preview {
-  display:grid; grid-template-columns:repeat(2,1fr); gap:10px; padding:4px 0;
+/* ====== RESPONSIVE ====== */
+@media(max-width:768px){
+  .sidebar{display:none}
+  .main{padding:20px}
+  .two-col{grid-template-columns:1fr}
 }
-.preview-link-card {
-  display:flex; align-items:center; gap:10px;
-  background:var(--bg-3); border:1px solid var(--border);
-  border-radius:var(--r-md); padding:10px 12px;
-  font-size:0.82rem; font-weight:500; color:var(--text-2);
-}
-.preview-link-card i { color:var(--primary); width:16px; text-align:center; }
-
-/* ─── AUDIT LOG ─── */
-.audit-item {
-  display:flex; align-items:flex-start; gap:12px;
-  padding:12px 20px; border-bottom:1px solid var(--border);
-}
-.audit-item:last-child { border-bottom:none; }
-.audit-dot {
-  width:8px; height:8px; border-radius:50%; margin-top:5px; flex-shrink:0;
-}
-.audit-msg { font-size:0.83rem; color:var(--text-1); }
-.audit-time { font-size:0.72rem; color:var(--text-3); margin-top:2px; }
 </style>
 </head>
 <body>
 
-<div id="toast-container"></div>
-
-<!-- ═══════════════ LOGIN SCREEN ═══════════════ -->
-<div id="login-screen">
-  <div class="login-bg">
-    <div class="login-blob"></div>
-    <div class="login-blob"></div>
-  </div>
+<!-- ===== LOGIN ===== -->
+<div id="loginScreen">
   <div class="login-card">
-    <div class="login-logo">
-      <div class="login-logo-mark">DS</div>
-      <div class="login-logo-text">
-        Admin Portal
-        <span>Dede Suparman — GAS Developer</span>
-      </div>
-    </div>
-    <h1 class="login-title">Selamat Datang</h1>
-    <p class="login-subtitle">Masuk untuk mengelola Link Hub & Proyek</p>
-
-    <div class="login-error" id="loginError">
-      <i class="fa-solid fa-circle-exclamation"></i>
-      <span id="loginErrorMsg">Username atau password salah.</span>
-    </div>
-
-    <div class="form-group">
-      <label class="form-label">Username</label>
-      <input type="text" class="form-input" id="loginUsername" placeholder="admin" autocomplete="username">
-    </div>
-    <div class="form-group">
-      <label class="form-label">Password</label>
-      <div class="input-wrap">
-        <input type="password" class="form-input" id="loginPassword" placeholder="••••••••" autocomplete="current-password">
-        <button class="input-eye" id="togglePwd" type="button" tabindex="-1">
-          <i class="fa-solid fa-eye" id="eyeIcon"></i>
-        </button>
-      </div>
-    </div>
-
-    <button type="button" class="btn-login" id="loginBtn" onclick="doLogin()">
-      <i class="fa-solid fa-arrow-right-to-bracket"></i> Masuk ke Admin
-    </button>
-
-    <p class="login-hint">
-      <i class="fa-solid fa-shield-halved"></i>
-      Akses terbatas — Admin only
-    </p>
+    <div class="login-logo"><i class="fas fa-shield-halved" style="color:#fff"></i></div>
+    <div class="login-title">Admin Portal</div>
+    <div class="login-sub">Enter your password to manage links</div>
+    <input class="login-field" type="text" id="loginUser" placeholder="Username" autocomplete="username">
+    <input class="login-field" type="password" id="loginPass" placeholder="Password" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+    <button class="login-btn" onclick="doLogin()"><i class="fas fa-sign-in-alt"></i>Sign In</button>
+    <p class="login-err" id="loginErr">Invalid username or password</p>
+    <p class="login-hint">Default: <strong>admin</strong> / <strong>admin123</strong></p>
   </div>
 </div>
 
-<!-- ═══════════════ SIDEBAR OVERLAY ═══════════════ -->
-<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
-
-<!-- ═══════════════ APP SHELL ═══════════════ -->
-<div id="app" style="display:none;">
-
-  <!-- SIDEBAR -->
-  <aside class="sidebar" id="sidebar">
-    <div class="sidebar-header">
-      <div class="sidebar-logo">
-        <div class="sidebar-logo-mark">DS</div>
-        <div>
-          <div class="sidebar-logo-text">Admin Portal</div>
-          <span class="sidebar-badge">GAS Developer</span>
-        </div>
-      </div>
+<!-- ===== ADMIN APP ===== -->
+<div id="adminApp">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sb-logo">
+      <div class="sb-logo-text">⚡ LinkAdmin</div>
+      <div class="sb-logo-sub">Management Panel</div>
     </div>
-
-    <nav class="sidebar-nav">
-      <div class="nav-section-title">Menu Utama</div>
-      <div class="nav-item active" onclick="showPage('dashboard',this)">
-        <i class="fa-solid fa-chart-pie"></i> Dashboard
+    <nav class="sb-nav">
+      <div class="sb-item active" data-page="dashboard" onclick="navTo('dashboard',this)">
+        <i class="fas fa-chart-line"></i>Dashboard
       </div>
-      <div class="nav-item" onclick="showPage('links',this)">
-        <i class="fa-solid fa-link"></i> Link Hub
-        <span class="badge-count" id="navLinkCount">0</span>
+      <div class="sb-item" data-page="links" onclick="navTo('links',this)">
+        <i class="fas fa-link"></i>Manage Links
       </div>
-      <div class="nav-item" onclick="showPage('categories',this)">
-        <i class="fa-solid fa-tags"></i> Kategori
+      <div class="sb-item" data-page="profile" onclick="navTo('profile',this)">
+        <i class="fas fa-user"></i>Profile
       </div>
-
-      <div class="nav-section-title" style="margin-top:10px;">Konten</div>
-      <div class="nav-item" onclick="showPage('projects',this)">
-        <i class="fa-solid fa-folder-open"></i> Proyek
+      <div class="sb-divider"></div>
+      <div class="sb-item" data-page="settings" onclick="navTo('settings',this)">
+        <i class="fas fa-lock"></i>Security
       </div>
-
-      <div class="nav-section-title" style="margin-top:10px;">Sistem</div>
-      <div class="nav-item" onclick="showPage('settings',this)">
-        <i class="fa-solid fa-gear"></i> Pengaturan
-      </div>
-      <div class="nav-item" onclick="window.open('index.html','_blank')">
-        <i class="fa-solid fa-arrow-up-right-from-square"></i> Lihat Website
+      <div class="sb-item" onclick="window.open('index.html','_blank')" style="color:var(--accent2)">
+        <i class="fas fa-eye"></i>View Public
       </div>
     </nav>
-
-    <div class="sidebar-footer">
-      <div class="admin-profile">
-        <div class="admin-avatar" id="sidebarAvatar">A</div>
-        <div class="admin-info">
-          <div class="admin-name" id="sidebarName">Admin</div>
-          <div class="admin-role">Superadmin</div>
-        </div>
-        <button class="btn-logout" onclick="doLogout()" title="Logout">
-          <i class="fa-solid fa-right-from-bracket"></i>
-        </button>
-      </div>
+    <div class="sb-bottom">
+      <button class="sb-logout" onclick="doLogout()">
+        <i class="fas fa-right-from-bracket"></i>Sign Out
+      </button>
     </div>
   </aside>
 
-  <!-- MAIN CONTENT -->
-  <div class="main-content">
+  <!-- Main -->
+  <main class="main">
 
-    <!-- TOPBAR -->
-    <header class="topbar">
-      <div class="topbar-left">
-        <button class="topbar-btn" id="menuBtn" onclick="toggleSidebar()" title="Toggle sidebar">
-          <i class="fa-solid fa-bars"></i>
-        </button>
-        <div>
-          <div class="topbar-title" id="topbarTitle">Dashboard</div>
+    <!-- DASHBOARD PAGE -->
+    <div class="page active" id="page-dashboard">
+      <div class="page-title"><i class="fas fa-chart-line"></i>Dashboard</div>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon" style="color:var(--accent)"><i class="fas fa-link"></i></div>
+          <div class="stat-val" id="st-total">0</div>
+          <div class="stat-key">Total Links</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="color:var(--accent2)"><i class="fas fa-tags"></i></div>
+          <div class="stat-val" id="st-cats">0</div>
+          <div class="stat-key">Categories</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="color:var(--green)"><i class="fas fa-calendar-plus"></i></div>
+          <div class="stat-val" id="st-today">0</div>
+          <div class="stat-key">Added Today</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="color:var(--amber)"><i class="fas fa-layer-group"></i></div>
+          <div class="stat-val" id="st-tagged">0</div>
+          <div class="stat-key">With Tags</div>
         </div>
       </div>
-      <div class="topbar-right">
-        <div class="conn-status" id="connStatus">
-          <span class="conn-dot" id="connDot"></span>
-          <span id="connLabel">Tidak terhubung</span>
+      <div id="dash-cats"></div>
+    </div>
+
+    <!-- LINKS PAGE -->
+    <div class="page" id="page-links">
+      <div class="page-title"><i class="fas fa-link"></i>Manage Links</div>
+      <div class="controls-row">
+        <div class="search-box">
+          <i class="fas fa-search"></i>
+          <input class="search-inp" id="adminSearch" placeholder="Search links..." oninput="adminSearchFn()">
         </div>
-        <button class="topbar-btn" onclick="toggleTheme()" title="Toggle tema" id="themeBtn">
-          <i class="fa-solid fa-moon" id="themeIcon"></i>
-        </button>
-        <button class="topbar-btn" onclick="refreshCurrentPage()" title="Refresh">
-          <i class="fa-solid fa-arrows-rotate"></i>
-        </button>
+        <select class="sel" id="catFilter" style="width:160px" onchange="renderTable()">
+          <option value="">All Categories</option>
+        </select>
+        <button class="btn btn-primary" onclick="openAdd()"><i class="fas fa-plus"></i>Add Link</button>
       </div>
-    </header>
-
-    <!-- PAGE CONTENT -->
-    <div class="page-content">
-
-      <!-- ══ DASHBOARD ══ -->
-      <div class="page active" id="page-dashboard">
-        <div class="stats-row">
-          <div class="stat-card">
-            <div>
-              <div class="stat-num" id="statLinks">—</div>
-              <div class="stat-label">Total Link</div>
-            </div>
-            <div class="stat-card-icon icon-primary"><i class="fa-solid fa-link"></i></div>
-          </div>
-          <div class="stat-card">
-            <div>
-              <div class="stat-num" id="statActive">—</div>
-              <div class="stat-label">Link Aktif</div>
-            </div>
-            <div class="stat-card-icon icon-green"><i class="fa-solid fa-circle-check"></i></div>
-          </div>
-          <div class="stat-card">
-            <div>
-              <div class="stat-num" id="statCategories">—</div>
-              <div class="stat-label">Kategori</div>
-            </div>
-            <div class="stat-card-icon icon-blue"><i class="fa-solid fa-tags"></i></div>
-          </div>
-          <div class="stat-card">
-            <div>
-              <div class="stat-num" id="statClicks">—</div>
-              <div class="stat-label">Total Klik</div>
-            </div>
-            <div class="stat-card-icon icon-orange"><i class="fa-solid fa-chart-simple"></i></div>
-          </div>
-        </div>
-
-        <div class="dash-grid">
-          <!-- Recent Links -->
-          <div class="card">
-            <div class="card-header">
-              <div class="card-title"><i class="fa-solid fa-fire"></i> Top Link (by Klik)</div>
-              <button class="btn btn-ghost btn-sm" onclick="showPage('links', document.querySelectorAll('.nav-item')[1])">
-                Lihat Semua <i class="fa-solid fa-arrow-right"></i>
-              </button>
-            </div>
-            <div class="card-body">
-              <table class="data-table">
-                <thead>
-                  <tr>
-                    <th>Judul</th><th>Kategori</th><th>Klik</th><th>Status</th>
-                  </tr>
-                </thead>
-                <tbody id="dashRecentBody">
-                  <tr><td colspan="4" style="padding:32px;text-align:center;">
-                    <div class="spinner" style="margin:0 auto;"></div>
-                  </td></tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <!-- Quick Stats + Actions -->
-          <div style="display:flex;flex-direction:column;gap:16px;">
-            <div class="card">
-              <div class="card-header">
-                <div class="card-title"><i class="fa-solid fa-folder-open"></i> Ringkasan Proyek</div>
-              </div>
-              <div class="card-body">
-                <table class="data-table">
-                  <thead><tr><th>Status</th><th>Jumlah</th></tr></thead>
-                  <tbody id="dashProjectBody">
-                    <tr><td colspan="2" style="padding:24px;text-align:center;">
-                      <div class="spinner" style="margin:0 auto;"></div>
-                    </td></tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
-            <div class="card">
-              <div class="card-header">
-                <div class="card-title"><i class="fa-solid fa-bolt"></i> Aksi Cepat</div>
-              </div>
-              <div class="card-body" style="padding:16px;display:flex;flex-direction:column;gap:8px;">
-                <button class="btn btn-primary" onclick="showPage('links',document.querySelectorAll('.nav-item')[1]);setTimeout(openLinkModal,100)">
-                  <i class="fa-solid fa-plus"></i> Tambah Link Baru
-                </button>
-                <button class="btn btn-outline" onclick="showPage('projects',document.querySelectorAll('.nav-item')[3]);setTimeout(openProjectModal,100)">
-                  <i class="fa-solid fa-folder-plus"></i> Tambah Proyek
-                </button>
-                <button class="btn btn-outline" onclick="showPage('settings',document.querySelectorAll('.nav-item')[4])">
-                  <i class="fa-solid fa-gear"></i> Pengaturan Supabase
-                </button>
-              </div>
-            </div>
-          </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Icon</th>
+              <th>Title</th>
+              <th>URL</th>
+              <th>Category</th>
+              <th>Tags</th>
+              <th>Date</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="linksTable"></tbody>
+        </table>
+        <div class="empty-tbl" id="emptyTbl" style="display:none">
+          <i class="fas fa-inbox"></i>No links yet. Click "Add Link" to get started.
         </div>
       </div>
+    </div>
 
-      <!-- ══ LINKS ══ -->
-      <div class="page" id="page-links">
-        <div class="card">
-          <div class="card-header">
-            <div class="card-title"><i class="fa-solid fa-link"></i> Manajemen Link Hub</div>
-            <div class="card-actions">
-              <div class="search-wrap">
-                <i class="fa-solid fa-magnifying-glass"></i>
-                <input type="text" class="search-input" id="linkSearch" placeholder="Cari link..." oninput="filterLinks()">
-              </div>
-              <select class="search-input" id="linkCatFilter" style="width:auto;padding-left:12px;" onchange="filterLinks()">
-                <option value="">Semua Kategori</option>
-              </select>
-              <button class="btn btn-primary btn-sm" onclick="openLinkModal()">
-                <i class="fa-solid fa-plus"></i> Tambah Link
-              </button>
-            </div>
-          </div>
-          <div class="card-body">
-            <table class="data-table">
-              <thead>
-                <tr>
-                  <th style="width:24px;"></th>
-                  <th>Icon</th><th>Judul</th><th>URL</th><th>Kategori</th>
-                  <th>Klik</th><th>Pin</th><th>Aktif</th><th>Aksi</th>
-                </tr>
-              </thead>
-              <tbody id="linksTableBody">
-                <tr><td colspan="9" style="padding:48px;text-align:center;">
-                  <div class="spinner" style="margin:0 auto;"></div>
-                </td></tr>
-              </tbody>
-            </table>
-          </div>
+    <!-- PROFILE PAGE -->
+    <div class="page" id="page-profile">
+      <div class="page-title"><i class="fas fa-user"></i>Profile Settings</div>
+      <div class="profile-form">
+        <h3>Public Profile</h3>
+        <div class="form-row">
+          <label>Display Name</label>
+          <input class="inp" id="pName" placeholder="Your name">
         </div>
+        <div class="form-row">
+          <label>Bio / Tagline</label>
+          <textarea class="textarea inp" id="pBio" placeholder="Short description..."></textarea>
+        </div>
+        <div class="form-row">
+          <label>Initials (shown in avatar)</label>
+          <input class="inp" id="pInitials" placeholder="e.g. DS" maxlength="2" style="width:80px">
+        </div>
+        <button class="btn btn-primary" onclick="saveProfile()"><i class="fas fa-save"></i>Save Profile</button>
       </div>
+    </div>
 
-      <!-- ══ CATEGORIES ══ -->
-      <div class="page" id="page-categories">
-        <div class="card">
-          <div class="card-header">
-            <div class="card-title"><i class="fa-solid fa-tags"></i> Kategori Link Hub</div>
-            <button class="btn btn-primary btn-sm" onclick="openCatModal()">
-              <i class="fa-solid fa-plus"></i> Tambah Kategori
-            </button>
-          </div>
-          <div class="card-body">
-            <table class="data-table">
-              <thead>
-                <tr><th>Label</th><th>Slug</th><th>Icon</th><th>Warna</th><th>Urutan</th><th>Aksi</th></tr>
-              </thead>
-              <tbody id="catsTableBody">
-                <tr><td colspan="6" style="padding:48px;text-align:center;">
-                  <div class="spinner" style="margin:0 auto;"></div>
-                </td></tr>
-              </tbody>
-            </table>
-          </div>
+    <!-- SECURITY PAGE -->
+    <div class="page" id="page-settings">
+      <div class="page-title"><i class="fas fa-lock"></i>Security</div>
+      <div class="pass-form">
+        <h3>Change Password</h3>
+        <div class="form-row">
+          <label>Current Password</label>
+          <input class="inp" type="password" id="curPass">
         </div>
+        <div class="form-row">
+          <label>New Password</label>
+          <input class="inp" type="password" id="newPass">
+        </div>
+        <div class="form-row">
+          <label>Confirm New Password</label>
+          <input class="inp" type="password" id="confPass">
+        </div>
+        <button class="btn btn-primary" onclick="changePass()"><i class="fas fa-key"></i>Update Password</button>
+        <div class="pass-msg" id="passMsg"></div>
       </div>
+    </div>
 
-      <!-- ══ PROJECTS ══ -->
-      <div class="page" id="page-projects">
-        <div class="card">
-          <div class="card-header">
-            <div class="card-title"><i class="fa-solid fa-folder-open"></i> Manajemen Proyek</div>
-            <button class="btn btn-primary btn-sm" onclick="openProjectModal()">
-              <i class="fa-solid fa-plus"></i> Tambah Proyek
-            </button>
-          </div>
-          <div class="card-body">
-            <table class="data-table">
-              <thead>
-                <tr>
-                  <th>Nama</th><th>Kategori</th><th>Teknologi</th>
-                  <th>Status</th><th>Featured</th><th>Views</th><th>Aksi</th>
-                </tr>
-              </thead>
-              <tbody id="projectsTableBody">
-                <tr><td colspan="7" style="padding:48px;text-align:center;">
-                  <div class="spinner" style="margin:0 auto;"></div>
-                </td></tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
+  </main>
+</div>
 
-      <!-- ══ SETTINGS ══ -->
-      <div class="page" id="page-settings">
-
-        <!-- Info Banner -->
-        <div class="config-banner">
-          <i class="fa-solid fa-circle-info"></i>
-          <p>
-            <strong>Konfigurasi Supabase</strong> — Masukkan URL dan Anon Key dari
-            <a href="https://app.supabase.com" target="_blank">app.supabase.com</a>
-            → Project Settings → API. Konfigurasi tersimpan di <code>localStorage</code> browser.
-          </p>
-        </div>
-
-        <!-- RLS Warning -->
-        <div class="config-banner" style="border-left-color:var(--orange);background:rgba(255,140,66,0.07);">
-          <i class="fa-solid fa-triangle-exclamation" style="color:var(--orange);"></i>
-          <div>
-            <strong>Penting — RLS Supabase:</strong> Agar admin bisa INSERT/UPDATE/DELETE, jalankan SQL ini di
-            <a href="https://app.supabase.com" target="_blank">Supabase SQL Editor</a>:
-            <code style="display:block;margin-top:8px;padding:10px 14px;background:var(--bg-2);border-radius:6px;font-size:0.75rem;line-height:1.8;white-space:pre;overflow-x:auto;">CREATE POLICY "anon_write_links" ON public.links FOR ALL TO anon USING (TRUE) WITH CHECK (TRUE);
-CREATE POLICY "anon_write_categories" ON public.link_categories FOR ALL TO anon USING (TRUE) WITH CHECK (TRUE);
-CREATE POLICY "anon_write_projects" ON public.projects FOR ALL TO anon USING (TRUE) WITH CHECK (TRUE);</code>
-          </div>
-        </div>
-
-        <!-- Supabase Connection -->
-        <div class="settings-section">
-          <div class="settings-section-header">
-            <i class="fa-solid fa-database"></i> Koneksi Supabase
-          </div>
-          <div class="settings-row">
-            <div class="settings-row-info">
-              <p>Supabase URL</p>
-              <span>Project URL dari dashboard</span>
-            </div>
-            <input type="text" class="form-input" id="cfgUrl" placeholder="https://xxxx.supabase.co" style="width:320px;">
-          </div>
-          <div class="settings-row">
-            <div class="settings-row-info">
-              <p>Anon Key (Public)</p>
-              <span>Format: eyJhbGciOiJIUzI1NiIs...</span>
-            </div>
-            <input type="text" class="form-input" id="cfgAnon" placeholder="eyJhbGciOiJIUzI1NiIs..." style="width:320px;">
-          </div>
-          <div class="settings-row">
-            <div></div>
-            <div style="display:flex;gap:10px;">
-              <button class="btn btn-outline btn-sm" onclick="testConnection()">
-                <i class="fa-solid fa-plug"></i> Test Koneksi
-              </button>
-              <button class="btn btn-primary btn-sm" onclick="saveConfig()">
-                <i class="fa-solid fa-floppy-disk"></i> Simpan
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Security -->
-        <div class="settings-section">
-          <div class="settings-section-header">
-            <i class="fa-solid fa-user-shield"></i> Keamanan Admin
-          </div>
-          <div class="settings-row">
-            <div class="settings-row-info">
-              <p>Ganti Password</p>
-              <span>Minimal 8 karakter</span>
-            </div>
-            <button class="btn btn-outline btn-sm" onclick="openChangePwdModal()">
-              <i class="fa-solid fa-key"></i> Ganti Password
-            </button>
-          </div>
-          <div class="settings-row">
-            <div class="settings-row-info">
-              <p>Logout</p>
-              <span>Keluar dari sesi ini</span>
-            </div>
-            <button class="btn btn-danger btn-sm" onclick="doLogout()">
-              <i class="fa-solid fa-right-from-bracket"></i> Logout
-            </button>
-          </div>
-        </div>
-
-        <!-- Danger Zone -->
-        <div class="settings-section" style="border-color:rgba(255,77,109,0.2);">
-          <div class="settings-section-header" style="border-bottom-color:rgba(255,77,109,0.2);">
-            <i class="fa-solid fa-triangle-exclamation" style="color:var(--red);"></i>
-            <span style="color:var(--red);">Danger Zone</span>
-          </div>
-          <div class="settings-row">
-            <div class="settings-row-info">
-              <p>Reset localStorage</p>
-              <span>Hapus semua konfigurasi yang tersimpan di browser</span>
-            </div>
-            <button class="btn btn-danger btn-sm" onclick="clearLocalStorage()">
-              <i class="fa-solid fa-trash"></i> Reset
-            </button>
-          </div>
-        </div>
-      </div>
-
-    </div><!-- /page-content -->
-  </div><!-- /main-content -->
-</div><!-- /app -->
-
-<!-- ═══ MODAL: Add/Edit Link ═══ -->
-<div class="modal-overlay" id="linkModal">
+<!-- ===== ADD/EDIT MODAL ===== -->
+<div class="overlay" id="overlay" onclick="if(event.target===this)closeModal()">
   <div class="modal">
-    <div class="modal-header">
-      <div class="modal-title" id="linkModalTitle">Tambah Link Baru</div>
-      <button class="modal-close" onclick="closeLinkModal()"><i class="fa-solid fa-xmark"></i></button>
+    <div class="modal-head">
+      <h2 id="modalTitle">Add New Link</h2>
+      <button class="close-btn" onclick="closeModal()"><i class="fas fa-times"></i></button>
     </div>
     <div class="modal-body">
-      <input type="hidden" id="linkId">
+      <input type="hidden" id="editId">
+
+      <!-- Icon + Color -->
       <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">Judul *</label>
-          <input type="text" class="form-input" id="linkTitle" placeholder="Contoh: GitHub">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Kategori</label>
-          <select class="form-select" id="linkCategory"></select>
-        </div>
-      </div>
-      <div class="form-group">
-        <label class="form-label">URL *</label>
-        <input type="url" class="form-input" id="linkUrl" placeholder="https://...">
-      </div>
-      <div class="form-group">
-        <label class="form-label">Deskripsi</label>
-        <textarea class="form-textarea" id="linkDesc" placeholder="Deskripsi singkat..."></textarea>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Font Awesome Icon Class</label>
-        <input type="text" class="form-input" id="linkIcon" placeholder="fa-brands fa-github" oninput="previewIcon()">
+        <label>Icon & Color</label>
         <div class="icon-preview">
-          <div class="icon-preview-box"><i id="iconPreviewEl" class="fa-solid fa-link"></i></div>
-          <div class="icon-preview-hint">Cari di <a href="https://fontawesome.com/icons" target="_blank" style="color:var(--primary);">fontawesome.com</a></div>
+          <div class="icon-preview-box" id="iconPreviewBox" onclick="toggleIconPanel()" title="Click to change icon">
+            <i class="fas fa-link" id="iconPreviewEl" style="font-size:22px"></i>
+          </div>
+          <div>
+            <div class="icon-preview-label">Click icon to change</div>
+            <div class="color-row" id="colorRow"></div>
+          </div>
+        </div>
+        <!-- Icon Picker Panel -->
+        <div class="icon-panel" id="iconPanel">
+          <div class="icon-panel-search">
+            <i class="fas fa-search"></i>
+            <input type="text" id="iconSearch" placeholder="Search icons..." oninput="filterIcons()">
+          </div>
+          <div class="icon-categories" id="iconCatBtns"></div>
+          <div class="icon-grid" id="iconGrid"></div>
         </div>
       </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">Urutan (sort order)</label>
-          <input type="number" class="form-input" id="linkOrder" value="0" min="0">
-        </div>
-        <div class="form-group" style="display:flex;flex-direction:column;gap:14px;padding-top:22px;">
-          <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:0.85rem;">
-            <button type="button" class="toggle" id="togglePin" onclick="this.classList.toggle('on')"></button>
-            <span>Pin di atas (Featured)</span>
-          </label>
-          <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:0.85rem;">
-            <button type="button" class="toggle on" id="toggleActive" onclick="this.classList.toggle('on')"></button>
-            <span>Aktif (tampil di website)</span>
-          </label>
-        </div>
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-outline" onclick="closeLinkModal()">Batal</button>
-      <button class="btn btn-primary" onclick="saveLink()" id="saveLinkBtn">
-        <i class="fa-solid fa-floppy-disk"></i> Simpan Link
-      </button>
-    </div>
-  </div>
-</div>
 
-<!-- ═══ MODAL: Add/Edit Category ═══ -->
-<div class="modal-overlay" id="catModal">
-  <div class="modal">
-    <div class="modal-header">
-      <div class="modal-title" id="catModalTitle">Tambah Kategori</div>
-      <button class="modal-close" onclick="closeCatModal()"><i class="fa-solid fa-xmark"></i></button>
-    </div>
-    <div class="modal-body">
-      <input type="hidden" id="catId">
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">Label *</label>
-          <input type="text" class="form-input" id="catLabel" placeholder="Social Media">
+      <div class="two-col">
+        <div class="form-row">
+          <label>Title *</label>
+          <input class="inp" id="fTitle" placeholder="e.g. GitHub" required>
         </div>
-        <div class="form-group">
-          <label class="form-label">Slug *</label>
-          <input type="text" class="form-input" id="catSlug" placeholder="social">
-        </div>
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">Icon (Font Awesome)</label>
-          <input type="text" class="form-input" id="catIcon" placeholder="fa-solid fa-tag">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Warna (hex)</label>
-          <input type="color" class="form-input" id="catColor" value="#BFFF00" style="height:42px;padding:4px 8px;">
-        </div>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Urutan</label>
-        <input type="number" class="form-input" id="catOrder" value="0" min="0">
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-outline" onclick="closeCatModal()">Batal</button>
-      <button class="btn btn-primary" onclick="saveCategory()">
-        <i class="fa-solid fa-floppy-disk"></i> Simpan Kategori
-      </button>
-    </div>
-  </div>
-</div>
-
-<!-- ═══ MODAL: Add/Edit Project ═══ -->
-<div class="modal-overlay" id="projectModal">
-  <div class="modal" style="max-width:600px;">
-    <div class="modal-header">
-      <div class="modal-title" id="projectModalTitle">Tambah Proyek</div>
-      <button class="modal-close" onclick="closeProjectModal()"><i class="fa-solid fa-xmark"></i></button>
-    </div>
-    <div class="modal-body">
-      <input type="hidden" id="projectId">
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">Nama Proyek *</label>
-          <input type="text" class="form-input" id="projectName" placeholder="HR Portal GAS">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Slug *</label>
-          <input type="text" class="form-input" id="projectSlug" placeholder="hr-portal-gas">
-        </div>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Deskripsi</label>
-        <textarea class="form-textarea" id="projectDesc" placeholder="Deskripsi proyek..."></textarea>
-      </div>
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">Kategori</label>
-          <select class="form-select" id="projectCat">
-            <option value="Web App">Web App</option>
-            <option value="Automation">Automation</option>
-            <option value="Dashboard">Dashboard</option>
-            <option value="API">API</option>
-            <option value="Tool">Tool</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Status</label>
-          <select class="form-select" id="projectStatus">
-            <option value="Live">Live</option>
-            <option value="Beta">Beta</option>
-            <option value="Development">Development</option>
-            <option value="Archived">Archived</option>
+        <div class="form-row">
+          <label>Category *</label>
+          <select class="sel" id="fCat">
+            <option value="">Select...</option>
+            <option value="work">💼 Work</option>
+            <option value="social">💬 Social</option>
+            <option value="dev">💻 Development</option>
+            <option value="design">🎨 Design</option>
+            <option value="learning">📚 Learning</option>
+            <option value="tools">🛠️ Tools</option>
+            <option value="media">🎬 Media</option>
+            <option value="finance">💰 Finance</option>
+            <option value="health">🏥 Health</option>
+            <option value="other">📌 Other</option>
           </select>
         </div>
       </div>
-      <div class="form-group">
-        <label class="form-label">Teknologi (pisahkan koma)</label>
-        <input type="text" class="form-input" id="projectTech" placeholder="Google Apps Script, Sheets, HTML5">
+      <div class="form-row">
+        <label>URL *</label>
+        <input class="inp" id="fUrl" placeholder="https://" type="url" required>
       </div>
       <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">Demo URL</label>
-          <input type="url" class="form-input" id="projectDemo" placeholder="https://...">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Repo URL</label>
-          <input type="url" class="form-input" id="projectRepo" placeholder="https://github.com/...">
-        </div>
+        <label>Tags (comma separated)</label>
+        <input class="inp" id="fTags" placeholder="e.g. frontend, portfolio, react">
       </div>
-      <div style="display:flex;align-items:center;gap:12px;margin-top:4px;">
-        <button type="button" class="toggle" id="toggleFeatured" onclick="this.classList.toggle('on')"></button>
-        <span style="font-size:0.85rem;">Featured (tampil di homepage)</span>
+      <div class="form-row">
+        <label>Notes (optional)</label>
+        <input class="inp" id="fNotes" placeholder="Any quick note...">
       </div>
     </div>
-    <div class="modal-footer">
-      <button class="btn btn-outline" onclick="closeProjectModal()">Batal</button>
-      <button class="btn btn-primary" onclick="saveProject()">
-        <i class="fa-solid fa-floppy-disk"></i> Simpan Proyek
-      </button>
+    <div class="modal-foot">
+      <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveLink()"><i class="fas fa-save"></i>Save Link</button>
     </div>
   </div>
 </div>
 
-<!-- ═══ MODAL: Change Password ═══ -->
-<div class="modal-overlay" id="pwdModal">
-  <div class="modal" style="max-width:420px;">
-    <div class="modal-header">
-      <div class="modal-title">Ganti Password</div>
-      <button class="modal-close" onclick="closePwdModal()"><i class="fa-solid fa-xmark"></i></button>
-    </div>
-    <div class="modal-body">
-      <div class="form-group">
-        <label class="form-label">Password Lama</label>
-        <input type="password" class="form-input" id="pwdOld">
-      </div>
-      <div class="form-group">
-        <label class="form-label">Password Baru</label>
-        <input type="password" class="form-input" id="pwdNew">
-      </div>
-      <div class="form-group">
-        <label class="form-label">Konfirmasi Password Baru</label>
-        <input type="password" class="form-input" id="pwdConfirm">
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-outline" onclick="closePwdModal()">Batal</button>
-      <button class="btn btn-primary" onclick="changePassword()">
-        <i class="fa-solid fa-key"></i> Ganti Password
-      </button>
-    </div>
-  </div>
-</div>
+<!-- Toast container -->
+<div class="toasts" id="toasts"></div>
 
-
-<!-- ═══════════════ JAVASCRIPT ═══════════════ -->
 <script>
-'use strict';
+/* ========== DATA ========== */
+const LINKS_KEY='ds_portal_links';
+const PROFILE_KEY='ds_portal_profile';
+const AUTH_KEY='ds_portal_auth';
 
-/* ══════════════════════════════════════════════
-   CONFIG & STATE
-══════════════════════════════════════════════ */
-let SUPABASE_URL  = localStorage.getItem('sb_url')  || '';
-let SUPABASE_ANON = localStorage.getItem('sb_anon') || '';
-let supabase      = null;
+function getLinks(){return JSON.parse(localStorage.getItem(LINKS_KEY)||'[]')}
+function setLinks(d){localStorage.setItem(LINKS_KEY,JSON.stringify(d))}
+function getProfile(){return JSON.parse(localStorage.getItem(PROFILE_KEY)||'{"name":"Dede Suparman","bio":"Digital workspace — all my important links, organized in one place.","initials":"DS"}')}
+function setProfile(d){localStorage.setItem(PROFILE_KEY,JSON.stringify(d))}
+function getAuth(){return JSON.parse(localStorage.getItem(AUTH_KEY)||'{"user":"admin","pass":"admin123"}')}
+function setAuth(d){localStorage.setItem(AUTH_KEY,JSON.stringify(d))}
 
-const ADMIN_CREDS = {
-  admin: localStorage.getItem('admin_pwd_hash') || 'Admin@123'
-};
-let currentAdmin = JSON.parse(sessionStorage.getItem('ds_admin') || 'null');
-
-let allLinks    = [];
-let allCats     = [];
-let allProjects = [];
-
-// In-memory fallback
-let memLinks = [
-  { id:'1', title:'Portfolio',  description:'Lihat portfolio lengkap', url:'#', icon:'fa-solid fa-briefcase', category_id:null, is_active:true, is_pinned:true,  sort_order:1, click_count:120 },
-  { id:'2', title:'GitHub',     description:'Repositori kode saya',    url:'https://github.com', icon:'fa-brands fa-github', category_id:null, is_active:true, is_pinned:false, sort_order:2, click_count:89 },
-  { id:'3', title:'WhatsApp',   description:'Chat diskusi proyek',     url:'https://wa.me/62xxxxxxxxxx', icon:'fa-brands fa-whatsapp', category_id:null, is_active:true, is_pinned:false, sort_order:3, click_count:45 },
-];
-let memCats = [
-  { id:'c1', slug:'personal', label:'Personal',     icon:'fa-solid fa-user',          color:'#BFFF00', sort_order:1 },
-  { id:'c2', slug:'social',   label:'Social Media', icon:'fa-solid fa-share-nodes',   color:'#4f9eff', sort_order:2 },
-  { id:'c3', slug:'contact',  label:'Contact',      icon:'fa-solid fa-address-book',  color:'#00d68f', sort_order:3 },
-];
-let memProjects = [];
-
-function getSampleData(table) {
-  if (table === 'links')          return [...memLinks];
-  if (table === 'link_categories')return [...memCats];
-  if (table === 'projects')       return [...memProjects];
-  return [];
-}
-
-/* ══════════════════════════════════════════════
-   SUPABASE
-══════════════════════════════════════════════ */
-function initSupabase() {
-  if (!SUPABASE_URL || !SUPABASE_ANON) { updateConnStatus(false); return false; }
-  try {
-    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
-    return true;
-  } catch(e) { supabase = null; updateConnStatus(false); return false; }
-}
-
-function updateConnStatus(connected, error = false) {
-  const dot   = document.getElementById('connDot');
-  const label = document.getElementById('connLabel');
-  if (!dot) return;
-  dot.className   = 'conn-dot' + (connected ? ' connected' : error ? ' error' : '');
-  label.textContent = connected ? 'Terhubung' : error ? 'Gagal terhubung' : 'Tidak terhubung';
-}
-
-async function sbQuery(table, opts = {}) {
-  if (!supabase) return { data: getSampleData(table), error: null };
-  try {
-    let q = supabase.from(table).select(opts.select || '*');
-    if (opts.filter) Object.entries(opts.filter).forEach(([k,v]) => q = q.eq(k,v));
-    if (opts.order)  q = q.order(opts.order, { ascending: opts.asc !== false });
-    if (opts.limit)  q = q.limit(opts.limit);
-    const { data, error } = await q;
-    return { data, error };
-  } catch(e) { return { data: null, error: e }; }
-}
-
-async function sbInsert(table, row) {
-  if (!supabase) {
-    toast('Supabase belum dikonfigurasi. Data hanya tersimpan sementara.', 'info');
-    return { data: { ...row, id: Date.now().toString() }, error: null };
-  }
-  return await supabase.from(table).insert(row).select().single();
-}
-
-async function sbUpdate(table, id, row) {
-  if (!supabase) return { data: row, error: null };
-  return await supabase.from(table).update(row).eq('id', id).select().single();
-}
-
-async function sbDelete(table, id) {
-  if (!supabase) return { error: null };
-  return await supabase.from(table).delete().eq('id', id);
-}
-
-/* ══════════════════════════════════════════════
-   AUTH
-══════════════════════════════════════════════ */
-function doLogin() {
-  const user = document.getElementById('loginUsername').value.trim();
-  const pass = document.getElementById('loginPassword').value;
-  const btn  = document.getElementById('loginBtn');
-
-  if (!user || !pass) { showLoginError('Username dan password wajib diisi.'); return; }
-
-  btn.disabled = true;
-  btn.innerHTML = '<div class="spinner" style="border-color:rgba(0,0,0,0.2);border-top-color:#000;width:16px;height:16px;margin:0 auto;"></div>';
-
-  setTimeout(() => {
-    const storedPwd = localStorage.getItem('admin_pwd_' + user)
-                   || localStorage.getItem('admin_pwd_hash')
-                   || 'Admin@123';
-    const isValid   = (user === 'admin') && (pass === storedPwd);
-
-    if (isValid) {
-      currentAdmin = { username: user, role: 'superadmin', loginAt: Date.now() };
-      sessionStorage.setItem('ds_admin', JSON.stringify(currentAdmin));
-      document.getElementById('loginError').style.display = 'none';
-      showAdminApp();
-    } else {
-      showLoginError('Username atau password salah.');
-      btn.disabled = false;
-      btn.innerHTML = '<i class="fa-solid fa-arrow-right-to-bracket"></i> Masuk ke Admin';
-    }
-  }, 700);
-}
-
-function showLoginError(msg) {
-  const err = document.getElementById('loginError');
-  document.getElementById('loginErrorMsg').textContent = msg;
-  err.style.display = 'flex';
-}
-
-function doLogout() {
-  sessionStorage.removeItem('ds_admin');
-  currentAdmin = null;
-  document.getElementById('app').style.display = 'none';
-  const ls = document.getElementById('login-screen');
-  ls.classList.remove('hidden');
-  ls.style.display = 'flex';
-  // Reset login form
-  document.getElementById('loginUsername').value = '';
-  document.getElementById('loginPassword').value = '';
-  document.getElementById('loginError').style.display = 'none';
-  document.getElementById('loginBtn').disabled = false;
-  document.getElementById('loginBtn').innerHTML = '<i class="fa-solid fa-arrow-right-to-bracket"></i> Masuk ke Admin';
-  toast('Logout berhasil', 'info');
-}
-
-/* ══════════════════════════════════════════════
-   APP INIT
-══════════════════════════════════════════════ */
-function showAdminApp() {
-  document.getElementById('login-screen').classList.add('hidden');
-  const app = document.getElementById('app');
-  app.style.display = 'flex';
-
-  document.getElementById('sidebarName').textContent   = currentAdmin.username;
-  document.getElementById('sidebarAvatar').textContent = currentAdmin.username[0].toUpperCase();
-
-  // Load saved config into settings form
-  document.getElementById('cfgUrl').value  = SUPABASE_URL;
-  document.getElementById('cfgAnon').value = SUPABASE_ANON;
-
-  const ok = initSupabase();
-  if (ok) {
-    // quick ping to check real connection
-    supabase.from('links').select('id').limit(1).then(({ error }) => updateConnStatus(!error, !!error));
-  }
-
-  loadDashboard();
-}
-
-/* ══════════════════════════════════════════════
-   PAGE NAVIGATION
-══════════════════════════════════════════════ */
-const PAGE_TITLES = {
-  dashboard:'Dashboard', links:'Manajemen Link Hub',
-  categories:'Kategori', projects:'Proyek', settings:'Pengaturan'
+const CAT_CONFIG={
+  work:{label:'Work',icon:'fa-briefcase',color:'#6366f1'},
+  social:{label:'Social',icon:'fa-comments',color:'#3b82f6'},
+  dev:{label:'Development',icon:'fa-code',color:'#10b981'},
+  design:{label:'Design',icon:'fa-palette',color:'#f43f5e'},
+  learning:{label:'Learning',icon:'fa-book-open',color:'#f97316'},
+  tools:{label:'Tools',icon:'fa-wrench',color:'#a855f7'},
+  media:{label:'Media',icon:'fa-play',color:'#ec4899'},
+  finance:{label:'Finance',icon:'fa-coins',color:'#eab308'},
+  health:{label:'Health',icon:'fa-heart-pulse',color:'#ef4444'},
+  other:{label:'Other',icon:'fa-thumbtack',color:'#6b7280'}
 };
 
-function showPage(name, navEl) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  document.getElementById('page-' + name).classList.add('active');
-  if (navEl) navEl.classList.add('active');
-  document.getElementById('topbarTitle').textContent = PAGE_TITLES[name] || name;
-  closeSidebar();
+const PRESET_COLORS=['#7c4dff','#00e5ff','#ff4081','#10b981','#f97316','#3b82f6','#f43f5e','#a855f7','#ec4899','#eab308','#6366f1','#14b8a6','#ef4444','#84cc16','#f59e0b','#06b6d4','#8b5cf6','#e11d48','#64748b','#d946ef'];
 
-  if (name === 'dashboard')  loadDashboard();
-  if (name === 'links')      loadLinks();
-  if (name === 'categories') loadCategories();
-  if (name === 'projects')   loadProjects();
+function hexToRgba(hex,a){
+  try{
+    const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);
+    return `rgba(${r},${g},${b},${a})`;
+  }catch{return `rgba(124,77,255,${a})`}
 }
 
-function refreshCurrentPage() {
-  const active = document.querySelector('.page.active');
-  if (!active) return;
-  showPage(active.id.replace('page-',''), document.querySelector('.nav-item.active'));
-}
+/* ========== ICONS ========== */
+const ICONS=[
+  {cat:'General',icons:['fa-solid fa-link','fa-solid fa-star','fa-solid fa-heart','fa-solid fa-bookmark','fa-solid fa-fire','fa-solid fa-bolt','fa-solid fa-globe','fa-solid fa-home','fa-solid fa-bell','fa-solid fa-flag','fa-solid fa-thumbtack','fa-solid fa-tag','fa-solid fa-circle-info','fa-solid fa-circle-check','fa-solid fa-circle-xmark','fa-solid fa-circle-exclamation']},
+  {cat:'Tech',icons:['fa-solid fa-code','fa-solid fa-terminal','fa-solid fa-database','fa-solid fa-server','fa-solid fa-microchip','fa-solid fa-bug','fa-solid fa-wrench','fa-solid fa-screwdriver-wrench','fa-solid fa-gear','fa-solid fa-gears','fa-solid fa-robot','fa-solid fa-laptop-code','fa-solid fa-desktop','fa-solid fa-laptop','fa-solid fa-mobile-screen','fa-solid fa-tablet-screen-button']},
+  {cat:'Dev',icons:['fa-brands fa-github','fa-brands fa-gitlab','fa-brands fa-bitbucket','fa-brands fa-git','fa-brands fa-js','fa-brands fa-python','fa-brands fa-react','fa-brands fa-vuejs','fa-brands fa-angular','fa-brands fa-node-js','fa-brands fa-php','fa-brands fa-java','fa-brands fa-swift','fa-brands fa-rust','fa-brands fa-docker','fa-brands fa-linux','fa-brands fa-ubuntu','fa-brands fa-apple','fa-brands fa-windows','fa-brands fa-npm']},
+  {cat:'Social',icons:['fa-brands fa-linkedin','fa-brands fa-twitter','fa-brands fa-x-twitter','fa-brands fa-instagram','fa-brands fa-facebook','fa-brands fa-youtube','fa-brands fa-tiktok','fa-brands fa-discord','fa-brands fa-slack','fa-brands fa-telegram','fa-brands fa-whatsapp','fa-brands fa-reddit','fa-brands fa-pinterest','fa-brands fa-twitch','fa-brands fa-snapchat','fa-brands fa-spotify']},
+  {cat:'Design',icons:['fa-brands fa-figma','fa-brands fa-adobe','fa-brands fa-sketch','fa-solid fa-palette','fa-solid fa-pen-nib','fa-solid fa-brush','fa-solid fa-paint-brush','fa-solid fa-crop','fa-solid fa-vector-square','fa-solid fa-shapes','fa-solid fa-swatchbook','fa-solid fa-image','fa-solid fa-film','fa-solid fa-camera','fa-solid fa-wand-magic-sparkles','fa-solid fa-layer-group']},
+  {cat:'Productivity',icons:['fa-solid fa-briefcase','fa-solid fa-calendar','fa-solid fa-clock','fa-solid fa-list-check','fa-solid fa-chart-line','fa-solid fa-chart-bar','fa-solid fa-chart-pie','fa-solid fa-file-text','fa-solid fa-folder','fa-solid fa-inbox','fa-solid fa-envelope','fa-solid fa-comments','fa-solid fa-users','fa-solid fa-building','fa-solid fa-handshake','fa-solid fa-award']},
+  {cat:'Tools',icons:['fa-brands fa-google','fa-brands fa-google-drive','fa-brands fa-dropbox','fa-brands fa-notion','fa-solid fa-cloud','fa-solid fa-shield-halved','fa-solid fa-key','fa-solid fa-lock','fa-solid fa-magnifying-glass','fa-solid fa-paper-plane','fa-solid fa-print','fa-solid fa-download','fa-solid fa-upload','fa-solid fa-rotate','fa-solid fa-trash','fa-solid fa-copy']},
+  {cat:'Learning',icons:['fa-solid fa-book','fa-solid fa-book-open','fa-solid fa-graduation-cap','fa-solid fa-school','fa-solid fa-certificate','fa-solid fa-lightbulb','fa-solid fa-brain','fa-solid fa-atom','fa-solid fa-flask','fa-solid fa-microscope','fa-solid fa-calculator','fa-solid fa-chart-diagram','fa-solid fa-spell-check','fa-solid fa-language','fa-solid fa-pen','fa-solid fa-pencil']},
+  {cat:'Media',icons:['fa-solid fa-play','fa-solid fa-music','fa-solid fa-headphones','fa-solid fa-microphone','fa-solid fa-podcast','fa-solid fa-video','fa-solid fa-clapperboard','fa-solid fa-tv','fa-solid fa-radio','fa-solid fa-compact-disc','fa-solid fa-guitar','fa-solid fa-drum','fa-brands fa-spotify','fa-brands fa-soundcloud','fa-brands fa-youtube','fa-brands fa-vimeo']},
+  {cat:'Finance',icons:['fa-solid fa-coins','fa-solid fa-dollar-sign','fa-solid fa-credit-card','fa-solid fa-wallet','fa-solid fa-piggy-bank','fa-solid fa-chart-line','fa-solid fa-arrow-trend-up','fa-solid fa-sack-dollar','fa-solid fa-receipt','fa-solid fa-building-columns','fa-solid fa-hand-holding-dollar','fa-brands fa-bitcoin','fa-brands fa-ethereum','fa-solid fa-money-bill','fa-solid fa-landmark','fa-solid fa-percent']},
+  {cat:'Health',icons:['fa-solid fa-heart','fa-solid fa-heart-pulse','fa-solid fa-hospital','fa-solid fa-stethoscope','fa-solid fa-pills','fa-solid fa-syringe','fa-solid fa-dumbbell','fa-solid fa-person-running','fa-solid fa-bicycle','fa-solid fa-apple-whole','fa-solid fa-carrot','fa-solid fa-leaf','fa-solid fa-spa','fa-solid fa-brain','fa-solid fa-lungs','fa-solid fa-tooth']},
+  {cat:'Travel',icons:['fa-solid fa-plane','fa-solid fa-car','fa-solid fa-train','fa-solid fa-ship','fa-solid fa-motorcycle','fa-solid fa-map','fa-solid fa-map-pin','fa-solid fa-location-dot','fa-solid fa-compass','fa-solid fa-mountain','fa-solid fa-tent','fa-solid fa-umbrella-beach','fa-solid fa-hotel','fa-solid fa-passport','fa-solid fa-suitcase','fa-solid fa-earth-americas']}
+];
 
-/* ══════════════════════════════════════════════
-   SIDEBAR
-══════════════════════════════════════════════ */
-function toggleSidebar() {
-  const sb = document.getElementById('sidebar');
-  const ov = document.getElementById('sidebarOverlay');
-  sb.classList.toggle('open');
-  ov.classList.toggle('visible');
-}
-function closeSidebar() {
-  document.getElementById('sidebar').classList.remove('open');
-  document.getElementById('sidebarOverlay').classList.remove('visible');
-}
+/* ========== AUTH ========== */
+let loggedIn=false;
 
-/* ══════════════════════════════════════════════
-   THEME
-══════════════════════════════════════════════ */
-function toggleTheme() {
-  const cur = document.documentElement.getAttribute('data-theme');
-  const next = cur === 'dark' ? 'light' : 'dark';
-  document.documentElement.setAttribute('data-theme', next);
-  document.getElementById('themeIcon').className = next === 'dark' ? 'fa-solid fa-moon' : 'fa-solid fa-sun';
-  localStorage.setItem('admin_theme', next);
-}
-
-/* ══════════════════════════════════════════════
-   DASHBOARD
-══════════════════════════════════════════════ */
-async function loadDashboard() {
-  const [linksRes, catsRes, projRes] = await Promise.all([
-    sbQuery('links'),
-    sbQuery('link_categories'),
-    sbQuery('projects'),
-  ]);
-  const links    = linksRes.data    || [];
-  const cats     = catsRes.data     || [];
-  const projects = projRes.data     || [];
-
-  document.getElementById('statLinks').textContent      = links.length;
-  document.getElementById('statActive').textContent     = links.filter(l => l.is_active).length;
-  document.getElementById('statCategories').textContent = cats.length;
-  document.getElementById('statClicks').textContent     = links.reduce((s,l) => s + (l.click_count||0), 0).toLocaleString();
-  document.getElementById('navLinkCount').textContent   = links.length;
-
-  // Top links by clicks
-  const topLinks = [...links].sort((a,b) => (b.click_count||0) - (a.click_count||0)).slice(0,5);
-  document.getElementById('dashRecentBody').innerHTML = topLinks.length ? topLinks.map(l => `
-    <tr>
-      <td><strong style="font-size:0.83rem;">${l.title}</strong></td>
-      <td><span class="badge badge-muted">${getCatLabel(l.category_id, cats)}</span></td>
-      <td>${(l.click_count||0).toLocaleString()}</td>
-      <td>${l.is_active ? '<span class="badge badge-green">Aktif</span>' : '<span class="badge badge-red">Nonaktif</span>'}</td>
-    </tr>
-  `).join('') : '<tr><td colspan="4"><div class="empty-state"><i class="fa-solid fa-inbox"></i><p>Belum ada link</p></div></td></tr>';
-
-  // Projects by status
-  const statusGroups = {};
-  projects.forEach(p => { statusGroups[p.status] = (statusGroups[p.status]||0) + 1; });
-  const statusColors = { Live:'badge-green', Beta:'badge-blue', Development:'badge-muted', Archived:'badge-muted' };
-  document.getElementById('dashProjectBody').innerHTML = Object.keys(statusGroups).length ? Object.entries(statusGroups).map(([s,c]) => `
-    <tr>
-      <td><span class="badge ${statusColors[s]||'badge-muted'}">${s}</span></td>
-      <td><strong>${c}</strong></td>
-    </tr>
-  `).join('') : '<tr><td colspan="2"><div class="empty-state" style="padding:24px;"><p>Belum ada proyek</p></div></td></tr>';
-}
-
-/* ══════════════════════════════════════════════
-   LINKS
-══════════════════════════════════════════════ */
-async function loadLinks() {
-  const [linksRes, catsRes] = await Promise.all([
-    sbQuery('links', { order: 'sort_order' }),
-    sbQuery('link_categories', { order: 'sort_order' }),
-  ]);
-  allLinks = linksRes.data || [];
-  allCats  = catsRes.data  || [];
-
-  const cf = document.getElementById('linkCatFilter');
-  cf.innerHTML = '<option value="">Semua Kategori</option>' +
-    allCats.map(c => `<option value="${c.id}">${c.label}</option>`).join('');
-
-  renderLinksTable(allLinks);
-}
-
-function filterLinks() {
-  const q   = document.getElementById('linkSearch').value.toLowerCase();
-  const cat = document.getElementById('linkCatFilter').value;
-  renderLinksTable(allLinks.filter(l => {
-    const matchQ   = !q   || l.title.toLowerCase().includes(q) || l.url.toLowerCase().includes(q);
-    const matchCat = !cat || l.category_id === cat;
-    return matchQ && matchCat;
-  }));
-}
-
-function getCatLabel(catId, cats) {
-  cats = cats || allCats;
-  const c = cats.find(c => c.id === catId);
-  return c ? c.label : '—';
-}
-
-function renderLinksTable(links) {
-  const tbody = document.getElementById('linksTableBody');
-  if (!links.length) {
-    tbody.innerHTML = `<tr><td colspan="9"><div class="empty-state"><i class="fa-solid fa-link-slash"></i><h3>Belum ada link</h3><p>Klik "Tambah Link" untuk memulai</p></div></td></tr>`;
-    return;
+function doLogin(){
+  const u=document.getElementById('loginUser').value.trim();
+  const p=document.getElementById('loginPass').value;
+  const auth=getAuth();
+  if(u===auth.user&&p===auth.pass){
+    loggedIn=true;
+    document.getElementById('loginScreen').classList.add('hidden');
+    document.getElementById('adminApp').classList.add('show');
+    initAdmin();
+  }else{
+    document.getElementById('loginErr').classList.add('show');
+    document.getElementById('loginPass').value='';
+    setTimeout(()=>document.getElementById('loginErr').classList.remove('show'),3000);
   }
-  tbody.innerHTML = links.map(l => `
-    <tr data-id="${l.id}">
-      <td><span class="drag-handle" title="Drag to reorder"><i class="fa-solid fa-grip-vertical"></i></span></td>
-      <td><div class="td-icon"><i class="${l.icon || 'fa-solid fa-link'}"></i></div></td>
+}
+
+document.getElementById('loginPass').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin()});
+
+function doLogout(){
+  loggedIn=false;
+  document.getElementById('adminApp').classList.remove('show');
+  document.getElementById('loginScreen').classList.remove('hidden');
+  document.getElementById('loginUser').value='';
+  document.getElementById('loginPass').value='';
+}
+
+function changePass(){
+  const auth=getAuth();
+  const cur=document.getElementById('curPass').value;
+  const nw=document.getElementById('newPass').value;
+  const cf=document.getElementById('confPass').value;
+  const msg=document.getElementById('passMsg');
+  if(cur!==auth.pass){msg.textContent='Current password incorrect';msg.className='pass-msg err';return}
+  if(nw.length<6){msg.textContent='New password must be at least 6 characters';msg.className='pass-msg err';return}
+  if(nw!==cf){msg.textContent="Passwords don't match";msg.className='pass-msg err';return}
+  setAuth({user:auth.user,pass:nw});
+  msg.textContent='Password updated successfully!';msg.className='pass-msg ok';
+  document.getElementById('curPass').value='';
+  document.getElementById('newPass').value='';
+  document.getElementById('confPass').value='';
+}
+
+/* ========== NAVIGATION ========== */
+function navTo(page,el){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.sb-item').forEach(i=>i.classList.remove('active'));
+  document.getElementById('page-'+page).classList.add('active');
+  if(el)el.classList.add('active');
+}
+
+/* ========== INIT ADMIN ========== */
+function initAdmin(){
+  renderDash();
+  renderTable();
+  populateCatFilter();
+  loadProfile();
+  buildIconCatBtns();
+  buildColorRow();
+}
+
+/* ========== DASHBOARD ========== */
+function renderDash(){
+  const links=getLinks();
+  document.getElementById('st-total').textContent=links.length;
+  const cats=[...new Set(links.map(l=>l.category))];
+  document.getElementById('st-cats').textContent=cats.length;
+  const today=new Date().toDateString();
+  document.getElementById('st-today').textContent=links.filter(l=>new Date(l.date).toDateString()===today).length;
+  document.getElementById('st-tagged').textContent=links.filter(l=>l.tags&&l.tags.length).length;
+
+  // Category breakdown
+  let html='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-top:8px">';
+  cats.forEach(cat=>{
+    const cfg=CAT_CONFIG[cat]||CAT_CONFIG.other;
+    const count=links.filter(l=>l.category===cat).length;
+    const pct=Math.round(count/links.length*100);
+    html+=`<div style="background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:16px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+        <div style="width:34px;height:34px;border-radius:8px;background:${hexToRgba(cfg.color,0.15)};color:${cfg.color};display:flex;align-items:center;justify-content:center;font-size:15px">
+          <i class="fas ${cfg.icon}"></i>
+        </div>
+        <div>
+          <div style="font-size:13px;font-weight:500">${cfg.label}</div>
+          <div style="font-size:11px;color:var(--muted)">${count} link${count!==1?'s':''}</div>
+        </div>
+      </div>
+      <div style="height:4px;background:rgba(255,255,255,0.06);border-radius:2px">
+        <div style="height:100%;width:${pct}%;background:${cfg.color};border-radius:2px"></div>
+      </div>
+    </div>`;
+  });
+  html+='</div>';
+  document.getElementById('dash-cats').innerHTML=cats.length?html:'<p style="color:var(--muted);font-size:13px">No links yet. <span style="color:var(--accent);cursor:pointer" onclick="navTo(\'links\',document.querySelector(\'[data-page=links]\'))">Add your first link →</span></p>';
+}
+
+/* ========== TABLE ========== */
+let adminQ='';
+function adminSearchFn(){adminQ=document.getElementById('adminSearch').value.trim();renderTable()}
+
+function populateCatFilter(){
+  const sel=document.getElementById('catFilter');
+  sel.innerHTML='<option value="">All Categories</option>';
+  Object.entries(CAT_CONFIG).forEach(([k,v])=>{
+    const o=document.createElement('option');o.value=k;o.textContent=v.label;sel.appendChild(o);
+  });
+}
+
+function renderTable(){
+  let links=getLinks();
+  const catF=document.getElementById('catFilter').value;
+  if(catF)links=links.filter(l=>l.category===catF);
+  if(adminQ){const q=adminQ.toLowerCase();links=links.filter(l=>l.title.toLowerCase().includes(q)||l.url.toLowerCase().includes(q)||(l.tags&&l.tags.some(t=>t.toLowerCase().includes(q))))}
+
+  const tbody=document.getElementById('linksTable');
+  const empty=document.getElementById('emptyTbl');
+  if(!links.length){tbody.innerHTML='';empty.style.display='block';return}
+  empty.style.display='none';
+
+  tbody.innerHTML=links.map(l=>{
+    const cfg=CAT_CONFIG[l.category]||CAT_CONFIG.other;
+    const color=l.iconColor||cfg.color;
+    const icon=l.icon||('fas '+cfg.icon);
+    const domain=getDomain(l.url);
+    const tags=(l.tags||[]).map(t=>`<span class="tag-sm">${esc(t)}</span>`).join('');
+    const date=new Date(l.date).toLocaleDateString('en-US',{month:'short',day:'numeric'});
+    return `<tr>
+      <td><div class="td-icon" style="background:${hexToRgba(color,0.15)};color:${color}"><i class="${esc(icon)}"></i></div></td>
+      <td><div class="td-title">${esc(l.title)}</div></td>
+      <td><a href="${esc(l.url)}" target="_blank" class="td-url" title="${esc(l.url)}" style="color:var(--accent2);text-decoration:none">${esc(domain)}</a></td>
+      <td><span class="td-cat" style="color:${color};border-color:${hexToRgba(color,0.25)}"><i class="fas ${cfg.icon}" style="font-size:10px"></i>${cfg.label}</span></td>
+      <td><div class="td-tags">${tags||'<span style="color:var(--dim);font-size:11px">—</span>'}</div></td>
+      <td style="font-size:11px;color:var(--dim)">${date}</td>
       <td>
-        <strong style="font-size:0.875rem;">${l.title}</strong>
-        ${l.is_pinned ? '<i class="fa-solid fa-thumbtack" style="color:var(--primary);font-size:0.68rem;margin-left:6px;"></i>' : ''}
-      </td>
-      <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
-        <a href="${l.url}" target="_blank" style="color:var(--blue);font-size:0.78rem;">${l.url}</a>
-      </td>
-      <td><span class="badge badge-muted">${getCatLabel(l.category_id)}</span></td>
-      <td style="font-size:0.85rem;">${(l.click_count||0).toLocaleString()}</td>
-      <td>
-        <button class="toggle ${l.is_pinned ? 'on' : ''}" onclick="toggleLinkPin('${l.id}',this)" title="Toggle pin"></button>
-      </td>
-      <td>
-        <button class="toggle ${l.is_active ? 'on' : ''}" onclick="toggleLinkActive('${l.id}',this)" title="Toggle aktif"></button>
-      </td>
-      <td>
-        <div style="display:flex;gap:6px;">
-          <button class="btn btn-outline btn-sm btn-icon" onclick="editLink('${l.id}')" title="Edit">
-            <i class="fa-solid fa-pen"></i>
-          </button>
-          <button class="btn btn-danger btn-sm btn-icon" onclick="deleteLink('${l.id}','${escHtml(l.title)}')" title="Hapus">
-            <i class="fa-solid fa-trash"></i>
-          </button>
+        <div class="action-btns">
+          <button class="icon-btn edit" onclick="openEdit(${l.id})" title="Edit"><i class="fas fa-pen"></i></button>
+          <button class="icon-btn del" onclick="deleteLink(${l.id})" title="Delete"><i class="fas fa-trash"></i></button>
         </div>
       </td>
-    </tr>
-  `).join('');
+    </tr>`;
+  }).join('');
 }
 
-function openLinkModal(data = null) {
-  document.getElementById('linkModalTitle').textContent = data ? 'Edit Link' : 'Tambah Link Baru';
-  document.getElementById('linkId').value    = data?.id    || '';
-  document.getElementById('linkTitle').value = data?.title || '';
-  document.getElementById('linkUrl').value   = data?.url   || '';
-  document.getElementById('linkDesc').value  = data?.description || '';
-  document.getElementById('linkIcon').value  = data?.icon  || '';
-  document.getElementById('linkOrder').value = data?.sort_order ?? 0;
-  document.getElementById('iconPreviewEl').className = data?.icon || 'fa-solid fa-link';
+function getDomain(url){try{return new URL(url).hostname.replace('www.','')}catch{return url}}
+function esc(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML}
 
-  document.getElementById('togglePin').className    = 'toggle' + (data?.is_pinned  ? ' on' : '');
-  document.getElementById('toggleActive').className = 'toggle' + (data?.is_active !== false ? ' on' : '');
+/* ========== MODAL ========== */
+let currentIcon='fa-solid fa-link';
+let currentColor='#7c4dff';
+let iconCatFilter='General';
 
-  const catSel = document.getElementById('linkCategory');
-  catSel.innerHTML = '<option value="">— Pilih Kategori —</option>' +
-    allCats.map(c => `<option value="${c.id}" ${String(data?.category_id) === String(c.id) ? 'selected' : ''}>${c.label}</option>`).join('');
-
-  document.getElementById('linkModal').classList.add('open');
-  setTimeout(() => document.getElementById('linkTitle').focus(), 120);
+function buildColorRow(){
+  const row=document.getElementById('colorRow');
+  row.innerHTML=PRESET_COLORS.map(c=>`<div class="color-dot${c===currentColor?' selected':''}" style="background:${c}" data-c="${c}" onclick="pickColor('${c}',this)" title="${c}"></div>`).join('');
 }
-function closeLinkModal() { document.getElementById('linkModal').classList.remove('open'); }
-function editLink(id)     { const l = allLinks.find(x => String(x.id) === String(id)); if(l) openLinkModal(l); }
-function previewIcon()    { document.getElementById('iconPreviewEl').className = document.getElementById('linkIcon').value.trim() || 'fa-solid fa-link'; }
 
-async function saveLink() {
-  const id    = document.getElementById('linkId').value;
-  const title = document.getElementById('linkTitle').value.trim();
-  const url   = document.getElementById('linkUrl').value.trim();
-  if (!title) { toast('Judul wajib diisi', 'error'); return; }
-  if (!url)   { toast('URL wajib diisi', 'error'); return; }
+function pickColor(c,el){
+  currentColor=c;
+  document.querySelectorAll('.color-dot').forEach(d=>d.classList.remove('selected'));
+  el.classList.add('selected');
+  updatePreview();
+}
 
-  const btn = document.getElementById('saveLinkBtn');
-  btn.disabled = true;
-  btn.innerHTML = '<div class="spinner" style="width:14px;height:14px;"></div> Menyimpan...';
+function updatePreview(){
+  const box=document.getElementById('iconPreviewBox');
+  const el=document.getElementById('iconPreviewEl');
+  el.className=currentIcon;
+  box.style.background=hexToRgba(currentColor,0.15);
+  box.style.color=currentColor;
+  box.style.borderColor=hexToRgba(currentColor,0.3);
+}
 
-  const payload = {
-    title, url,
-    description: document.getElementById('linkDesc').value.trim(),
-    icon:        document.getElementById('linkIcon').value.trim() || 'fa-solid fa-link',
-    category_id: document.getElementById('linkCategory').value || null,
-    sort_order:  parseInt(document.getElementById('linkOrder').value) || 0,
-    is_pinned:   document.getElementById('togglePin').classList.contains('on'),
-    is_active:   document.getElementById('toggleActive').classList.contains('on'),
-  };
+function buildIconCatBtns(){
+  const btns=document.getElementById('iconCatBtns');
+  btns.innerHTML=ICONS.map(g=>`<button class="icon-cat-btn${g.cat===iconCatFilter?' active':''}" onclick="setIconCat('${g.cat}',this)">${g.cat}</button>`).join('');
+  renderIconGrid();
+}
 
-  let res;
-  if (id) {
-    res = await sbUpdate('links', id, payload);
-    if (!res.error) {
-      const i = allLinks.findIndex(l => String(l.id) === String(id));
-      if (i >= 0) allLinks[i] = { ...allLinks[i], ...payload };
-      const mi = memLinks.findIndex(l => String(l.id) === String(id));
-      if (mi >= 0) memLinks[mi] = { ...memLinks[mi], ...payload };
-      toast('Link berhasil diperbarui!', 'success');
-    }
-  } else {
-    res = await sbInsert('links', payload);
-    if (!res.error && res.data) {
-      allLinks.push(res.data); memLinks.push(res.data);
-      toast('Link berhasil ditambahkan!', 'success');
-    }
+function setIconCat(cat,el){
+  iconCatFilter=cat;
+  document.querySelectorAll('.icon-cat-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('iconSearch').value='';
+  renderIconGrid();
+}
+
+function renderIconGrid(){
+  const q=document.getElementById('iconSearch').value.toLowerCase();
+  let icons=[];
+  if(q){
+    ICONS.forEach(g=>g.icons.forEach(i=>{if(i.toLowerCase().includes(q)||i.split(' fa-')[1].replace(/-/g,' ').includes(q))icons.push(i)}));
+  }else{
+    const group=ICONS.find(g=>g.cat===iconCatFilter);
+    if(group)icons=group.icons;
   }
-
-  btn.disabled = false;
-  btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Simpan Link';
-
-  if (res.error) { toast('Gagal: ' + (res.error.message || 'Error'), 'error'); return; }
-  closeLinkModal();
-  renderLinksTable(allLinks);
-  loadDashboard();
+  const grid=document.getElementById('iconGrid');
+  grid.innerHTML=icons.map(i=>`<div class="icon-item${i===currentIcon?' selected':''}" onclick="pickIcon('${i}')" title="${i.split(' fa-')[1]||i}"><i class="${i}"></i></div>`).join('');
 }
 
-async function deleteLink(id, title) {
-  if (!confirm(`Hapus link "${title}"? Tidak bisa dibatalkan.`)) return;
-  const res = await sbDelete('links', id);
-  if (!res.error) {
-    allLinks  = allLinks.filter(l => String(l.id) !== String(id));
-    memLinks  = memLinks.filter(l => String(l.id) !== String(id));
-    renderLinksTable(allLinks);
-    toast(`Link "${title}" dihapus`, 'success');
-    loadDashboard();
-  } else { toast('Gagal hapus: ' + res.error.message, 'error'); }
+function filterIcons(){renderIconGrid()}
+
+function pickIcon(icon){
+  currentIcon=icon;
+  document.querySelectorAll('.icon-item').forEach(el=>el.classList.remove('selected'));
+  const el=document.querySelector(`.icon-item[onclick="pickIcon('${icon}')"]`);
+  if(el)el.classList.add('selected');
+  updatePreview();
 }
 
-async function toggleLinkPin(id, btn) {
-  const isOn = !btn.classList.contains('on');
-  btn.classList.toggle('on');
-  await sbUpdate('links', id, { is_pinned: isOn });
-  const l = allLinks.find(x => String(x.id) === String(id));
-  if (l) l.is_pinned = isOn;
+function toggleIconPanel(){
+  document.getElementById('iconPanel').classList.toggle('show');
 }
 
-async function toggleLinkActive(id, btn) {
-  const isOn = !btn.classList.contains('on');
-  btn.classList.toggle('on');
-  await sbUpdate('links', id, { is_active: isOn });
-  const l = allLinks.find(x => String(x.id) === String(id));
-  if (l) l.is_active = isOn;
+function openAdd(){
+  currentIcon='fa-solid fa-link';
+  currentColor='#7c4dff';
+  document.getElementById('editId').value='';
+  document.getElementById('modalTitle').textContent='Add New Link';
+  document.getElementById('fTitle').value='';
+  document.getElementById('fUrl').value='';
+  document.getElementById('fCat').value='';
+  document.getElementById('fTags').value='';
+  document.getElementById('fNotes').value='';
+  document.getElementById('iconSearch').value='';
+  document.getElementById('iconPanel').classList.remove('show');
+  buildColorRow();
+  updatePreview();
+  renderIconGrid();
+  document.getElementById('overlay').classList.add('show');
+  setTimeout(()=>document.getElementById('fTitle').focus(),200);
 }
 
-/* ══════════════════════════════════════════════
-   CATEGORIES
-══════════════════════════════════════════════ */
-async function loadCategories() {
-  const res = await sbQuery('link_categories', { order: 'sort_order' });
-  allCats = res.data || [];
-  renderCatsTable(allCats);
+function openEdit(id){
+  const links=getLinks();
+  const l=links.find(x=>x.id===id);
+  if(!l)return;
+  currentIcon=l.icon||'fa-solid fa-link';
+  currentColor=l.iconColor||'#7c4dff';
+  document.getElementById('editId').value=id;
+  document.getElementById('modalTitle').textContent='Edit Link';
+  document.getElementById('fTitle').value=l.title;
+  document.getElementById('fUrl').value=l.url;
+  document.getElementById('fCat').value=l.category;
+  document.getElementById('fTags').value=(l.tags||[]).join(', ');
+  document.getElementById('fNotes').value=l.notes||'';
+  document.getElementById('iconSearch').value='';
+  document.getElementById('iconPanel').classList.remove('show');
+  buildColorRow();
+  updatePreview();
+  renderIconGrid();
+  document.getElementById('overlay').classList.add('show');
 }
 
-function renderCatsTable(cats) {
-  const tbody = document.getElementById('catsTableBody');
-  if (!cats.length) {
-    tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state"><i class="fa-solid fa-tags"></i><h3>Belum ada kategori</h3></div></td></tr>`;
-    return;
+function closeModal(){
+  document.getElementById('overlay').classList.remove('show');
+  document.getElementById('iconPanel').classList.remove('show');
+}
+
+function saveLink(){
+  const title=document.getElementById('fTitle').value.trim();
+  const url=document.getElementById('fUrl').value.trim();
+  const cat=document.getElementById('fCat').value;
+  if(!title||!url||!cat){toast('Please fill in Title, URL, and Category','err');return}
+  const tags=document.getElementById('fTags').value.split(',').map(t=>t.trim().toLowerCase()).filter(t=>t);
+  const notes=document.getElementById('fNotes').value.trim();
+  const links=getLinks();
+  const editId=document.getElementById('editId').value;
+
+  if(editId){
+    const idx=links.findIndex(l=>l.id===parseInt(editId));
+    if(idx!==-1){links[idx]={...links[idx],title,url,category:cat,icon:currentIcon,iconColor:currentColor,tags,notes}}
+    toast('Link updated!','ok');
+  }else{
+    const newId=links.length?Math.max(...links.map(l=>l.id))+1:1;
+    links.push({id:newId,title,url,category:cat,icon:currentIcon,iconColor:currentColor,tags,notes,date:new Date().toISOString()});
+    toast('Link added!','ok');
   }
-  tbody.innerHTML = cats.map(c => `
-    <tr>
-      <td><strong>${escHtml(c.label)}</strong></td>
-      <td><code style="font-size:0.75rem;background:var(--bg-3);padding:2px 8px;border-radius:4px;">${escHtml(c.slug)}</code></td>
-      <td><i class="${c.icon}" style="color:var(--primary);"></i> <span style="font-size:0.75rem;color:var(--text-3);margin-left:6px;">${escHtml(c.icon)}</span></td>
-      <td><span style="display:inline-flex;align-items:center;gap:6px;font-size:0.8rem;">
-        <span style="width:14px;height:14px;border-radius:50%;background:${c.color};display:inline-block;"></span>${c.color}
-      </span></td>
-      <td>${c.sort_order}</td>
-      <td>
-        <div style="display:flex;gap:6px;">
-          <button class="btn btn-outline btn-sm btn-icon" onclick="editCat('${c.id}')"><i class="fa-solid fa-pen"></i></button>
-          <button class="btn btn-danger btn-sm btn-icon" onclick="deleteCat('${c.id}','${escHtml(c.label)}')"><i class="fa-solid fa-trash"></i></button>
-        </div>
-      </td>
-    </tr>
-  `).join('');
+  setLinks(links);
+  closeModal();
+  renderTable();
+  renderDash();
 }
 
-function openCatModal(data = null) {
-  document.getElementById('catModalTitle').textContent = data ? 'Edit Kategori' : 'Tambah Kategori';
-  document.getElementById('catId').value    = data?.id    || '';
-  document.getElementById('catLabel').value = data?.label || '';
-  document.getElementById('catSlug').value  = data?.slug  || '';
-  document.getElementById('catIcon').value  = data?.icon  || 'fa-solid fa-tag';
-  document.getElementById('catColor').value = data?.color || '#BFFF00';
-  document.getElementById('catOrder').value = data?.sort_order ?? 0;
-  document.getElementById('catModal').classList.add('open');
-  setTimeout(() => document.getElementById('catLabel').focus(), 120);
-}
-function closeCatModal() { document.getElementById('catModal').classList.remove('open'); }
-function editCat(id) { const c = allCats.find(x => String(x.id) === String(id)); if(c) openCatModal(c); }
-
-async function saveCategory() {
-  const id    = document.getElementById('catId').value;
-  const label = document.getElementById('catLabel').value.trim();
-  const slug  = document.getElementById('catSlug').value.trim();
-  if (!label || !slug) { toast('Label dan slug wajib diisi', 'error'); return; }
-
-  const payload = {
-    label, slug: slug.toLowerCase().replace(/\s+/g,'-'),
-    icon:       document.getElementById('catIcon').value.trim() || 'fa-solid fa-tag',
-    color:      document.getElementById('catColor').value,
-    sort_order: parseInt(document.getElementById('catOrder').value) || 0,
-  };
-
-  let res;
-  if (id) {
-    res = await sbUpdate('link_categories', id, payload);
-    if (!res.error) { const i = allCats.findIndex(c => String(c.id)===String(id)); if(i>=0) allCats[i]={...allCats[i],...payload}; toast('Kategori diperbarui!','success'); }
-  } else {
-    res = await sbInsert('link_categories', payload);
-    if (!res.error && res.data) { allCats.push(res.data); memCats.push(res.data); toast('Kategori ditambahkan!','success'); }
-  }
-  if (res.error) { toast('Gagal: ' + res.error.message, 'error'); return; }
-  closeCatModal();
-  renderCatsTable(allCats);
+function deleteLink(id){
+  if(!confirm('Delete this link?'))return;
+  const links=getLinks().filter(l=>l.id!==id);
+  setLinks(links);
+  renderTable();
+  renderDash();
+  toast('Link deleted','ok');
 }
 
-async function deleteCat(id, label) {
-  if (!confirm(`Hapus kategori "${label}"? Link yang menggunakannya akan menjadi uncategorized.`)) return;
-  const res = await sbDelete('link_categories', id);
-  if (!res.error) {
-    allCats = allCats.filter(c => String(c.id) !== String(id));
-    renderCatsTable(allCats);
-    toast(`Kategori "${label}" dihapus`, 'success');
-  } else { toast('Gagal hapus: ' + res.error.message, 'error'); }
+/* ========== PROFILE ========== */
+function loadProfile(){
+  const p=getProfile();
+  document.getElementById('pName').value=p.name;
+  document.getElementById('pBio').value=p.bio;
+  document.getElementById('pInitials').value=p.initials||'';
 }
 
-/* ══════════════════════════════════════════════
-   PROJECTS
-══════════════════════════════════════════════ */
-async function loadProjects() {
-  const res = await sbQuery('projects', { order: 'sort_order' });
-  allProjects = res.data || [];
-  renderProjectsTable(allProjects);
+function saveProfile(){
+  const name=document.getElementById('pName').value.trim();
+  const bio=document.getElementById('pBio').value.trim();
+  const initials=document.getElementById('pInitials').value.trim().toUpperCase().slice(0,2);
+  if(!name){toast('Name is required','err');return}
+  setProfile({name,bio,initials:initials||name.split(' ').map(n=>n[0]).join('').slice(0,2)});
+  toast('Profile saved!','ok');
 }
 
-function renderProjectsTable(projects) {
-  const tbody = document.getElementById('projectsTableBody');
-  if (!projects.length) {
-    tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><i class="fa-solid fa-folder-open"></i><h3>Belum ada proyek</h3><p>Klik "Tambah Proyek" untuk memulai</p></div></td></tr>`;
-    return;
-  }
-  tbody.innerHTML = projects.map(p => `
-    <tr>
-      <td><strong style="font-size:0.875rem;">${escHtml(p.name)}</strong></td>
-      <td><span class="badge badge-muted">${p.category}</span></td>
-      <td style="font-size:0.78rem;">
-        ${(p.technology||[]).slice(0,3).map(t=>`<span class="badge badge-muted" style="margin:2px;">${t}</span>`).join('')}
-        ${(p.technology||[]).length>3 ? `<span style="color:var(--text-3);font-size:0.72rem;"> +${p.technology.length-3}</span>` : ''}
-      </td>
-      <td><span class="badge ${p.status==='Live'?'badge-green':p.status==='Beta'?'badge-blue':'badge-muted'}">${p.status}</span></td>
-      <td>${p.featured ? '<i class="fa-solid fa-star" style="color:var(--primary);"></i>' : '<i class="fa-regular fa-star" style="color:var(--text-3);"></i>'}</td>
-      <td style="font-size:0.85rem;">${(p.views||0).toLocaleString()}</td>
-      <td>
-        <div style="display:flex;gap:6px;">
-          <button class="btn btn-outline btn-sm btn-icon" onclick="editProject('${p.id}')"><i class="fa-solid fa-pen"></i></button>
-          <button class="btn btn-danger btn-sm btn-icon" onclick="deleteProject('${p.id}','${escHtml(p.name)}')"><i class="fa-solid fa-trash"></i></button>
-        </div>
-      </td>
-    </tr>
-  `).join('');
+/* ========== TOAST ========== */
+function toast(msg,type='ok'){
+  const c=document.getElementById('toasts');
+  const t=document.createElement('div');
+  t.className=`toast ${type}`;
+  t.innerHTML=`<i class="fas fa-${type==='ok'?'check-circle':'exclamation-circle'}"></i>${msg}`;
+  c.appendChild(t);
+  setTimeout(()=>t.remove(),3100);
 }
 
-function openProjectModal(data = null) {
-  document.getElementById('projectModalTitle').textContent = data ? 'Edit Proyek' : 'Tambah Proyek';
-  document.getElementById('projectId').value     = data?.id          || '';
-  document.getElementById('projectName').value   = data?.name        || '';
-  document.getElementById('projectSlug').value   = data?.slug        || '';
-  document.getElementById('projectDesc').value   = data?.description || '';
-  document.getElementById('projectCat').value    = data?.category    || 'Web App';
-  document.getElementById('projectStatus').value = data?.status      || 'Live';
-  document.getElementById('projectTech').value   = (data?.technology || []).join(', ');
-  document.getElementById('projectDemo').value   = data?.demo_url    || '';
-  document.getElementById('projectRepo').value   = data?.repo_url    || '';
-  document.getElementById('toggleFeatured').className = 'toggle' + (data?.featured ? ' on' : '');
-  document.getElementById('projectModal').classList.add('open');
-  setTimeout(() => document.getElementById('projectName').focus(), 120);
-}
-function closeProjectModal() { document.getElementById('projectModal').classList.remove('open'); }
-function editProject(id)     { const p = allProjects.find(x => String(x.id) === String(id)); if(p) openProjectModal(p); }
-
-async function saveProject() {
-  const id   = document.getElementById('projectId').value;
-  const name = document.getElementById('projectName').value.trim();
-  const slug = document.getElementById('projectSlug').value.trim();
-  if (!name || !slug) { toast('Nama dan slug wajib diisi', 'error'); return; }
-
-  const tech = document.getElementById('projectTech').value.split(',').map(t => t.trim()).filter(Boolean);
-  const payload = {
-    name, slug,
-    description: document.getElementById('projectDesc').value.trim(),
-    category:    document.getElementById('projectCat').value,
-    status:      document.getElementById('projectStatus').value,
-    technology:  tech,
-    demo_url:    document.getElementById('projectDemo').value.trim() || null,
-    repo_url:    document.getElementById('projectRepo').value.trim() || null,
-    featured:    document.getElementById('toggleFeatured').classList.contains('on'),
-  };
-
-  let res;
-  if (id) {
-    res = await sbUpdate('projects', id, payload);
-    if (!res.error) { const i = allProjects.findIndex(p => String(p.id)===String(id)); if(i>=0) allProjects[i]={...allProjects[i],...payload}; toast('Proyek diperbarui!','success'); }
-  } else {
-    res = await sbInsert('projects', payload);
-    if (!res.error && res.data) { allProjects.push(res.data); toast('Proyek ditambahkan!','success'); }
-  }
-  if (res.error) { toast('Gagal: ' + (res.error.message || 'Error'), 'error'); return; }
-  closeProjectModal();
-  renderProjectsTable(allProjects);
-}
-
-async function deleteProject(id, name) {
-  if (!confirm(`Hapus proyek "${name}"?`)) return;
-  const res = await sbDelete('projects', id);
-  if (!res.error) {
-    allProjects = allProjects.filter(p => String(p.id) !== String(id));
-    renderProjectsTable(allProjects);
-    toast(`Proyek "${name}" dihapus`, 'success');
-  } else { toast('Gagal hapus: ' + res.error.message, 'error'); }
-}
-
-/* ══════════════════════════════════════════════
-   SETTINGS
-══════════════════════════════════════════════ */
-function saveConfig() {
-  SUPABASE_URL  = document.getElementById('cfgUrl').value.trim();
-  SUPABASE_ANON = document.getElementById('cfgAnon').value.trim();
-  localStorage.setItem('sb_url',  SUPABASE_URL);
-  localStorage.setItem('sb_anon', SUPABASE_ANON);
-  const ok = initSupabase();
-  toast(ok ? 'Konfigurasi disimpan & Supabase terhubung!' : 'Konfigurasi disimpan (menggunakan data lokal)', ok ? 'success' : 'info');
-}
-
-async function testConnection() {
-  saveConfig();
-  if (!supabase) { toast('URL atau anon key belum diisi', 'error'); return; }
-  try {
-    const { data, error } = await supabase.from('links').select('id').limit(1);
-    if (error) throw error;
-    updateConnStatus(true);
-    toast('Koneksi Supabase berhasil! ✓', 'success');
-  } catch(e) {
-    updateConnStatus(false, true);
-    toast('Koneksi gagal: ' + (e.message || e), 'error');
-  }
-}
-
-function openChangePwdModal() { document.getElementById('pwdModal').classList.add('open'); }
-function closePwdModal()      { document.getElementById('pwdModal').classList.remove('open'); }
-
-function changePassword() {
-  const oldPwd     = document.getElementById('pwdOld').value;
-  const newPwd     = document.getElementById('pwdNew').value;
-  const confirmPwd = document.getElementById('pwdConfirm').value;
-
-  const storedPwd = localStorage.getItem('admin_pwd_' + currentAdmin.username)
-                 || localStorage.getItem('admin_pwd_hash')
-                 || 'Admin@123';
-
-  if (oldPwd !== storedPwd)  { toast('Password lama salah', 'error'); return; }
-  if (newPwd.length < 8)     { toast('Password baru minimal 8 karakter', 'error'); return; }
-  if (newPwd !== confirmPwd) { toast('Konfirmasi password tidak cocok', 'error'); return; }
-
-  localStorage.setItem('admin_pwd_' + currentAdmin.username, newPwd);
-  localStorage.setItem('admin_pwd_hash', newPwd);
-  ADMIN_CREDS[currentAdmin.username] = newPwd;
-
-  document.getElementById('pwdOld').value     = '';
-  document.getElementById('pwdNew').value     = '';
-  document.getElementById('pwdConfirm').value = '';
-
-  closePwdModal();
-  toast('Password berhasil diubah!', 'success');
-}
-
-function clearLocalStorage() {
-  if (!confirm('Hapus semua konfigurasi tersimpan di browser ini? Kamu perlu konfigurasi ulang.')) return;
-  ['sb_url','sb_anon','admin_pwd_hash','admin_pwd_admin','admin_theme'].forEach(k => localStorage.removeItem(k));
-  toast('localStorage direset', 'info');
-  SUPABASE_URL  = '';
-  SUPABASE_ANON = '';
-  supabase = null;
-  document.getElementById('cfgUrl').value  = '';
-  document.getElementById('cfgAnon').value = '';
-  updateConnStatus(false);
-}
-
-/* ══════════════════════════════════════════════
-   TOAST
-══════════════════════════════════════════════ */
-function toast(msg, type = 'info') {
-  const icons = { success:'fa-circle-check', error:'fa-circle-exclamation', info:'fa-circle-info' };
-  const el = document.createElement('div');
-  el.className = `toast ${type}`;
-  el.innerHTML = `<i class="fa-solid ${icons[type]}"></i><span>${msg}</span>`;
-  document.getElementById('toast-container').appendChild(el);
-  setTimeout(() => el.remove(), 4000);
-}
-
-/* ══════════════════════════════════════════════
-   UTILS
-══════════════════════════════════════════════ */
-function escHtml(str) {
-  if (!str) return '';
-  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
-/* ══════════════════════════════════════════════
-   DOM READY — All event listeners
-══════════════════════════════════════════════ */
-document.addEventListener('DOMContentLoaded', function() {
-
-  // Restore saved theme
-  const savedTheme = localStorage.getItem('admin_theme') || 'dark';
-  document.documentElement.setAttribute('data-theme', savedTheme);
-  document.getElementById('themeIcon').className = savedTheme === 'dark' ? 'fa-solid fa-moon' : 'fa-solid fa-sun';
-
-  // Toggle password visibility
-  document.getElementById('togglePwd').addEventListener('click', () => {
-    const inp  = document.getElementById('loginPassword');
-    const ico  = document.getElementById('eyeIcon');
-    const show = inp.type === 'password';
-    inp.type   = show ? 'text' : 'password';
-    ico.className = show ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye';
-  });
-
-  // Enter key on login
-  document.getElementById('loginPassword').addEventListener('keydown', e => { if(e.key==='Enter') doLogin(); });
-  document.getElementById('loginUsername').addEventListener('keydown', e => { if(e.key==='Enter') document.getElementById('loginPassword').focus(); });
-
-  // Auto slug for project
-  document.getElementById('projectName').addEventListener('input', e => {
-    if (!document.getElementById('projectId').value) {
-      document.getElementById('projectSlug').value = e.target.value.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
-    }
-  });
-
-  // Auto slug for category
-  document.getElementById('catLabel').addEventListener('input', e => {
-    if (!document.getElementById('catId').value) {
-      document.getElementById('catSlug').value = e.target.value.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
-    }
-  });
-
-  // Close modals on overlay click
-  document.querySelectorAll('.modal-overlay').forEach(overlay => {
-    overlay.addEventListener('click', e => { if(e.target === overlay) overlay.classList.remove('open'); });
-  });
-
-  // ESC closes modals
-  document.addEventListener('keydown', e => {
-    if (e.key === 'Escape') {
-      document.querySelectorAll('.modal-overlay.open').forEach(m => m.classList.remove('open'));
-    }
-  });
-
-  // Check existing session
-  if (currentAdmin) {
-    showAdminApp();
-  }
+/* ========== KEYBOARD ========== */
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){closeModal()}
 });
 </script>
-
 </body>
 </html>
